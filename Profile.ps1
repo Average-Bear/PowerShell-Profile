@@ -94,7 +94,8 @@ function PrintMenu{
 	Write-Host("ADgroup           Copy Specified User Groups to Clipboard")
 	Write-Host("cl                Clear Shell and Reprint Command Menu")
 	Write-Host("CrossCertRm       Remove Inoperable Certificates From Specified Workstation(s)")
-	Write-Host("Enac              Enable User Account in AD")
+
+Write-Host("Enac              Enable User Account in AD")
 	Write-Host("GetSAM            Search For SAM Account Name By User Last Name")
 	Write-Host("Ghost             Opens SCCM Ghost Session")
 	Write-Host("GodMode           Access God Mode")
