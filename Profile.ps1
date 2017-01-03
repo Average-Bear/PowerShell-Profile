@@ -94,8 +94,7 @@ function PrintMenu{
 	Write-Host("ADgroup           Copy Specified User Groups to Clipboard")
 	Write-Host("cl                Clear Shell and Reprint Command Menu")
 	Write-Host("CrossCertRm       Remove Inoperable Certificates From Specified Workstation(s)")
-
-Write-Host("Enac              Enable User Account in AD")
+	Write-Host("Enac              Enable User Account in AD")
 	Write-Host("GetSAM            Search For SAM Account Name By User Last Name")
 	Write-Host("Ghost             Opens SCCM Ghost Session")
 	Write-Host("GodMode           Access God Mode")
@@ -227,7 +226,7 @@ function SCCM {
     .EXAMPLE 
     SCCM  
     #> 
-	$pat1 = "\\SERVERa01\it\Applications\Microsoft (Multiple Items)\SCCM (Item 3107)\Admin Console.msc"
+	$pat1 = "\\SERVERa01\it\Applications\SCCM\Admin Console.msc"
 	$dir1 = "C:\Program Files (x86)\SCCM Tools"
 	$des1 = $dir1 + "\Admin Console.msc"
 if (!(Test-Path -Path $dir1)) {
@@ -912,7 +911,7 @@ function Nithins {
     .EXAMPLE 
     Nithins 
     #> 
-	$pat1 = "\\SERVERa01\it\Applications\Microsoft (Multiple Items)\SCCM (Item 3107)\ClientActionsTool.hta"
+	$pat1 = "\\SERVERa01\it\Applications\SCCM\ClientActionsTool.hta"
 	$dir1 = "C:\Program Files (x86)\SCCM Tools"
 	$des1 = $dir1 + "\ClientActionsTool.hta"
 if (!(Test-Path -Path $des1)) {
