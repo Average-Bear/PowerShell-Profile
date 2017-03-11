@@ -1,4 +1,4 @@
- $ProVersion = "Version 2.3"
+ $ProVersion = "v2.8"
 <#
 
 PowerShell Profile $ProVersion
@@ -6,10 +6,33 @@ PowerShell Profile $ProVersion
 Author: Jeremy DeWitt aka JBear
 
 Update Notes:
+Version 2.8:
+	- Added Windows 7 and MSOffice 2013 activation functions to repo.
+
+Version 2.7:
+	- Added a progress bar to each feasible function.
+	- Fixed bug in CrossCertRm.
+
+Version 2.6:
+	- Fixed bug in LastBoot function.
+	- Modified GetSAM and HuntUser functions to accept multiple values per search.
+
+Version 2.5: 
+	- Updated SYS function to operate with jobs to allow Asynchronous/parallel commands.
+	- Will add job functionality to all possible functions to save time. 
+	- Fixed RmPrint function. Also, added job functionality.
+	- Added job functionality to JavaCache function.
+	- Added job functionality to NetMSG function.
+	- Tweaked RmUserProf function.
+
+Version 2.4: 
+	- Introduced DelProf2.exe to the environment for User Profile deletion and Account Unknown cleaning abilities.
+	- Wrote function including DelProf2.exe.
+
 Version 2.3:
-	-Upgraded GUI to XAML as opposed to WinForms.
-	-Added CSV output functionality to reports when Export-CSV checkbox is checked.
-	-Added test code for Create New User GUI. This is NOT functioning as currently intended.
+	- Upgraded GUI to XAML as opposed to WinForms.
+	- Added CSV output functionality to reports when Export-CSV checkbox is checked.
+	- Added test code for Create New User GUI. This is NOT functioning as currently intended.
 
 Version 2.2:
 	- Fixed bug in HotFix GUI button.
@@ -31,14 +54,14 @@ Version 1.9:
 	- Fixed syntax error in installEXE that was causing a $Variable to be null.
 
 Version 1.8:
-	- Added specific Home Path to 'cd' command; set location to \\SERVERA01\IT\Documentation\PowerShell\Scripts.
+	- Added specific Home Path to 'cd' command; set location to \\SERVER12345\IT\Documentation\PowerShell\Scripts.
 
 Version 1.7:
 	- Moved repository to permanent location. Changed file references to reflect changes.
 
 Version 1.6:
 	- Added ability to enter only number portion of property numbers to RDP and Ghost.
-		(i.e. RDP 123456 or RDP COMPUTER123456; Ghost 123456 or Ghost COMPUTER123456)
+		(i.e. RDP 123456 or RDP Computer123456; Ghost 123456 or Ghost Computer123456)
 	- Updated Get-Help for all functions included in this repository.
 
 Version 1.5:
@@ -60,7 +83,7 @@ Version 1.2:
 Version 1.1:
 	- Removed InstallDate and Vendor from SWcheck function.
 	- Added version notes to file updating process.
-	- Changed Set-Location to my scripts folder "\\SERVERa01\transfer\JBear\Scripts".
+	- Changed Set-Location to my scripts folder "\\SERVER12345\transfer\JBear\Scripts".
 	- Bug fixes.
 
 	- Need to fix bugs in Create in SAARNewUser section.
@@ -77,15 +100,18 @@ Version 1.1:
 #$Shell.WindowSize = $size
 #$shell.BackgroundColor = “Black”
 #$shell.ForegroundColor = “White”
-Set-Location "\\SERVERa01\IT\Documentation\PowerShell\Scripts"
+
+net use Q: "\\SERVER12345\IT\Documentation\PowerShell"
+
+Set-Location "Q:\Scripts"
 
 #Update-Help
 
 #Custom menu that lists currently available functions within the shell repository
 function PrintMenu{
-	Write-Host(" ------------------------------ ")
+	Write-Host(" ----------------------- ")
 	Write-Host("| Bear Necessities $ProVersion |")
-	Write-Host(" ------------------------------ ")
+	Write-Host(" ----------------------- ")
 	Write-Host('Type "GUI" to launch GUI interface!')
 	Write-Host("")
 	Write-Host("Command           Function")
@@ -93,27 +119,31 @@ function PrintMenu{
 	Write-Host("ADcleanup         Remove specified workstation(s) from AD and SCCM")
 	Write-Host("ADgroup           Copy Specified User Groups to Clipboard")
 	Write-Host("cl                Clear Shell and Reprint Command Menu")
-	Write-Host("CrossCertRm       Remove Inoperable Certificates From Specified Workstation(s)")
+	Write-Host("CheckProcess      Retrieve System Process Information")
+	Write-Host("CrossCertRm       Remove Inoperable Certificates")
 	Write-Host("Enac              Enable User Account in AD")
-	Write-Host("GetSAM            Search For SAM Account Name By User Last Name")
+	Write-Host("GetSAM            Search For SAM Account Name By Name")
 	Write-Host("Ghost             Opens SCCM Ghost Session")
 	Write-Host("GodMode           Access God Mode")
 	Write-Host("GPR               Group Policy (Remote)")
 	Write-Host("HuntUser          Query SCCM For Last System Logged On By Specified User")
-	Write-Host("InstallEXE        Silent Install EXE's For Specified Workstation(s)")
-	Write-Host("InstallMSI        Silent Install MSI's For Specified Workstation(s)")
-	Write-Host("JavaCache         Clear Java Cache For Specified Workstation(s)")
-	Write-Host("LastBoot          Last Reboot Time For Specified Workstation(s)")
-	Write-Host("LoggedUser        Current Logged On User For Specified Workstation(s)")
+	Write-Host("InstallEXE        Silent Install EXE's")
+	Write-Host("InstallMSI        Silent Install MSI's")
+	Write-Host("JavaCache         Clear Java Cache")
+	Write-Host("LastBoot          Get Last Reboot Time")
+	Write-Host("LoggedUser        Get Current Logged On User")
 	Write-Host("NetMSG            On-screen Message For Specified Workstation(s)")
 	Write-Host("NewADuser         Create New Active Directory Users From SAAR Forms")
 	Write-Host("Nithins           Opens Nithin's SCCM Client Tool")
 	Write-Host("RDP               Remote Desktop")
-	Write-Host("Reboot            Force Restart For Specified Workstation(s)")
+        Write-Host("REARMOffice       Rearm Office 2013 Activation")
+        Write-Host("REARMWindows      Rearm Windows 7 OS Activation")
+	Write-Host("Reboot            Force Restart")
 	Write-Host("RmPrint           Clear Printer Drivers")
+	Write-Host("RmUserProf        Clear User Profiles")
 	Write-Host("SCCM              Active Directory/SCCM Console")	
-	Write-Host("SWcheck           Check Installed Software For Specified Workstation(s)")
-	Write-Host("SYS               All Remote System Info For Specified Workstation(s)")
+	Write-Host("SWcheck           Check Installed Software")
+	Write-Host("SYS               All Remote System Info")
 	Write-Host("UpdateProfile     Update PowerShell Profile (Will Overwrite Current Version & Any Changes)")
 	Write-Host("")
 	Write-Host("")
@@ -134,7 +164,7 @@ function cd {
 }#End CD
 
 #Set Home Path
-(Get-PSProvider 'FileSystem').Home = '\\SERVERA01\IT\Documentation\PowerShell\Scripts'
+(Get-PSProvider 'FileSystem').Home = "Q:\Scripts"
 
 #Pulls latest howtogeek.com link titles from their main page	
 <#function Get-Latest {
@@ -142,28 +172,28 @@ function cd {
 }#End Get-Latest#>
 
 function cl {
-    <# 
-    .SYNOPSIS 
-    Used to clear current PowerShell window
+  <# 
+  .SYNOPSIS 
+  Used to clear current PowerShell window
 
-    .DESCRIPTION 
-    Clears screen (same as clear) but, writes created 'PrintMenu' back onto the main shell for function reference
+  .DESCRIPTION 
+  Clears screen (same as clear) but, writes created 'PrintMenu' back onto the main shell for function reference
 
-    .EXAMPLE 
-    cl 
-    #> 
+  .EXAMPLE 
+  cl 
+  #> 
 	clear-host
 	PrintMenu
 }#End cl
 
 function GodMode {
-    <# 
-    .SYNOPSIS 
-    Access GodMode tools
+  <# 
+  .SYNOPSIS 
+  Access GodMode tools
  
-    .EXAMPLE 
-    GodMode
-    #> 	
+  .EXAMPLE 
+  GodMode
+  #> 	
 	#GodMode path based on current $env and current user
 	$userpath = [environment]::getfolderpath("desktop")
 	$godpath = "\GodMode.{ED7BA470-8E54-465E-825C-99712043E01C}"
@@ -178,13 +208,13 @@ function GodMode {
 }#End GodMode
 
 function ADgroup {
-    <# 
-    .SYNOPSIS 
-    Copies specified users' AD Groups to clipboard - created for specific person who needed this information
+  <# 
+  .SYNOPSIS 
+  Copies specified users' AD Groups to clipboard - created for specific person who needed this information
  
-    .EXAMPLE 
-    ADGroup User1
-    #> 	
+  .EXAMPLE 
+  ADGroup User1
+  #> 	
 	param(
 	[Parameter(Mandatory=$true)]
 	[string[]] $Username)
@@ -195,15 +225,15 @@ foreach ($Name in $UserName) {
 }#End ADgroup
 
 function UpdateProfile {
-    <# 
-    .SYNOPSIS 
-    Update PowerShell profile to current repository content
+  <# 
+  .SYNOPSIS 
+  Update PowerShell profile to current repository content
 
-    .EXAMPLE 
-    UpdateProfile 
-    #> 
+  .EXAMPLE 
+  UpdateProfile 
+  #> 
 
-$NetworkLocation = "\\SERVERa01\IT\Documentation\PowerShell\Profile Repository\DevOps\TechProfile.txt"
+$NetworkLocation = "\\SERVER12345\IT\Documentation\PowerShell\Profile Repository\DevOps\TechProfile.txt"
 
 $MyDocuments = [environment]::getfolderpath("mydocuments") + "\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 $MyDocuments2 = [environment]::getfolderpath("mydocuments") + "\WindowsPowerShell\Profile.ps1"
@@ -219,14 +249,14 @@ Powershell
 
 #Opens SCCM Admin Console.msc
 function SCCM {
-    <# 
-    .SYNOPSIS 
-    Opens pre-generated Active Directory and SCCM mmc
+  <# 
+  .SYNOPSIS 
+  Opens pre-generated Active Directory and SCCM mmc
 
-    .EXAMPLE 
-    SCCM  
-    #> 
-	$pat1 = "\\SERVERa01\it\Applications\SCCM\Admin Console.msc"
+  .EXAMPLE 
+  SCCM  
+  #> 
+	$pat1 = "\\SERVER12345\it\Applications\Microsoft (Multiple Items)\SCCM\Admin Console.msc"
 	$dir1 = "C:\Program Files (x86)\SCCM Tools"
 	$des1 = $dir1 + "\Admin Console.msc"
 if (!(Test-Path -Path $dir1)) {
@@ -245,92 +275,130 @@ if (Test-Path -Path $dir1) {
 clear-host
 PrintMenu
 function GetSAM {
-    <# 
-    .SYNOPSIS 
-    Retrieve users' SAM account name based on full or partial name search. 
+  <# 
+  .SYNOPSIS 
+  Retrieve users' SAM account name based on full or partial name search. 
 
-    .Parameter GivenName
-    Search user by Given Name. Default search is by Surname.
+  .Parameter GivenName
+  Search user by Given Name. Default search is by Surname.
 
-    .DESCRIPTION
-    The GetSAM function uses the Get-ADUser cmdlet to query Active Directory for all users including the value entered (i.e. Users' first name (using -GivenName parameter), or users' last name (Default search Surname).
+  .DESCRIPTION
+  The GetSAM function uses the Get-ADUser cmdlet to query Active Directory for all users including the value entered (i.e. Users' first name (using -GivenName parameter), or users' last name (Default search Surname).
  
-    .EXAMPLE 
-    GetSAM Smith
+  .EXAMPLE 
+  GetSAM Smith
 
-    .EXAMPLE 
-    GetSAM Smi 
+  .EXAMPLE 
+  GetSAM Smi 
 
-    .EXAMPLE 
-    GetSAM -GivenName John
+  .EXAMPLE 
+  GetSAM -GivenName John
 
-    .EXAMPLE
-    GetSAM -GivenName Jo
-    #>
+  .EXAMPLE
+  GetSAM -GivenName Jo
+  #>
 
 Param([parameter(Mandatory=$true)] 
-        [string[]]$NameValue,
-        [Switch]$GivenName)
+      [string[]]$NameValue,
+      [Switch]$GivenName)
 
     $name = switch ($GivenName.IsPresent) {
 	    $true { "GivenName" }
 	    default { "Surname" }
     }
 
-    #Get SAM Account Name for specified user
-    Get-ADUser -Filter "$Name -like '$NameValue*'" | FT GivenName, SurName, SamAccountName	
+$i=0
+$j=0
+
+    foreach ($User in $NameValue) {
+
+    Write-Progress -Activity "Retrieving SAM Account Names..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $NameValue.count) * 100) + "%") -CurrentOperation "Processing $($User)..." -PercentComplete ((($j++) / $NameValue.count) * 100)
+
+　
+        #Get SAM Account Name for specified user
+        Get-ADUser -Filter "$Name -like '$User*'" | FT GivenName, SurName, SamAccountName
+    }	
 }#End GetSAM
 
 function HuntUser {
-    <# 
-    .SYNOPSIS 
-    Retrieve workstation(s) last logged on by user (SAM Account Name)
+  <# 
+  .SYNOPSIS 
+  Retrieve workstation(s) last logged on by user (SAM Account Name)
 
-    .DESCRIPTION 
-    The HuntUser function will retrieve workstation(s) by the last logged on user (SAM Account Name). This queries SCCM; accuracy will depend on the last time each workstation has communicated with SCCM.
+  .DESCRIPTION 
+  The HuntUser function will retrieve workstation(s) by the last logged on user (SAM Account Name). This queries SCCM; accuracy will depend on the last time each workstation has communicated with SCCM.
 
-    .EXAMPLE 
-    HuntUser dewittj 
-    #> 
-	Param([parameter(Mandatory = $true)]$SamAccountName,
-	#SCCM Site Name
+  .EXAMPLE 
+  HuntUser dewittj 
+  #> 
+    Param( [parameter(Mandatory = $true)]
+    $SamAccountName,
+    #SCCM Site Name
     $SiteName="ABC",
-	#SCCM Server Name
-    $SCCMServer="SERVERV02")
-	#SCCM Namespace
-    $SCCMNameSpace="root\sms\site_$SiteName"
-	#Calls SCCM Server Query for list of workstations last logged on by specified SAM account name
-    Get-WmiObject -namespace $SCCMNameSpace -computer $SCCMServer -query "select Name from sms_r_system where LastLogonUserName='$SamAccountName'" | select Name
+    #SCCM Server Name
+    $SCCMServer="SERVER1234",
+    #SCCM Namespace
+    $SCCMNameSpace="root\sms\site_$SiteName")
+
+    function Query {
+
+	$i=0
+	$j=0
+
+        foreach ($User in $SamAccountName) {
+
+            Write-Progress -Activity "Retrieving Last Logged On Computers By SAM Account Name..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $SAMAccountName.count) * 100) + "%") -CurrentOperation "Processing $($User)..." -PercentComplete ((($j++) / $SAMAccountName.count) * 100)
+
+            $Computers =(Get-WmiObject -namespace $SCCMNameSpace -computer $SCCMServer -query "select Name from sms_r_system where LastLogonUserName='$User'").Name
+                foreach ($computer in $computers) {
+
+                    [pscustomobject] @{
+            
+                         SAMAccountName =  "$User"  
+                        "Last Computer" = "$computer"                    
+                }
+            }
+        }
+    }
+
+    Query
+
 }#End HuntUser
 
 function LoggedUser{
-    <# 
-    .SYNOPSIS 
-    Retrieve current user logged into specified workstations(s) 
+  <# 
+  .SYNOPSIS 
+  Retrieve current user logged into specified workstations(s) 
 
-    .EXAMPLE 
-    LoggedUser COMPUTER123456 
+  .EXAMPLE 
+  LoggedUser Computer123456 
 
-    .EXAMPLE 
-    LoggedUser 123456 
-    #> 
+  .EXAMPLE 
+  LoggedUser 123456 
+  #> 
 	Param([Parameter(Mandatory=$true)]
 	[string[]] $ComputerName)
 	if (($computername.length -eq 6)) {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 	write-host("")
 	write-host("Gathering resources. Please wait...")
 	write-host("")
-foreach ($Computer in $ComputerName) 
-{
-	$computerSystem = Get-CimInstance CIM_ComputerSystem -Computer $Computer
-	Write-Host "User Logged In: " + $computerSystem.UserName
-	Write-Host ""
-	}
+
+    $i=0
+    $j=0
+
+    foreach($Computer in $ComputerName) {
+
+        Write-Progress -Activity "Retrieving Last Logged On User..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+        $computerSystem = Get-CimInstance CIM_ComputerSystem -Computer $Computer
+
+        Write-Host "User Logged In: " $computerSystem.UserName "`n"
+    }
 }#End LoggedUser
 
 　
@@ -339,19 +407,19 @@ Import-Module ActiveDirectory
 
 #Reboots specified workstation(s)
 function Reboot {
-    <# 
-    .SYNOPSIS 
-    Restarts specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Restarts specified workstation(s) 
 
-    .EXAMPLE 
-    Reboot COMPUTER123456 
+  .EXAMPLE 
+  Reboot Computer123456 
 
-    .EXAMPLE 
-    Reboot 123456 
+  .EXAMPLE 
+  Reboot 123456 
 
-    .EXAMPLE
-    Reboot (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
-    #> 
+  .EXAMPLE
+  Reboot (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
+  #> 
 	param(
 	[Parameter(Mandatory=$true)]
 	[string[]] $ComputerName)
@@ -359,11 +427,19 @@ function Reboot {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
+
+$i=0
+$j=0
+
 foreach ($Computer in $ComputerName) {
+
+	Write-Progress -Activity "Getting GPO Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+
+　
 	#Force reboot on specified workstation or array
-	restart-computer $Computer -Force
+	Restart-Computer $Computer -Force -AsJob | Out-Null
 	}
 [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 $RebootConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Reboot sequence has been started on workstation(s)!", "OKOnly,SystemModal,Information", "Success")
@@ -373,16 +449,16 @@ $RebootConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Reboot sequen
  
 #ActiveDirectory module needed
 function Ghost {
-    <# 
-    .SYNOPSIS 
-    Opens Ghost session to specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Opens Ghost session to specified workstation(s) 
 
-    .EXAMPLE 
-    Ghost COMPUTER123456 
+  .EXAMPLE 
+  Ghost Computer123456 
 
-    .EXAMPLE 
-    Ghost 123456 
-    #> 
+  .EXAMPLE 
+  Ghost 123456 
+  #> 
 	param(
 	[Parameter(Mandatory=$true)]
 	[string]$computername)
@@ -390,7 +466,7 @@ function Ghost {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 	#Start 'Ghost' or interactive Remote Tools session with specified workstation 
@@ -400,16 +476,16 @@ function Ghost {
 
  
 function RDP {
-    <# 
-    .SYNOPSIS 
-    Remote Desktop Protocol to specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Remote Desktop Protocol to specified workstation(s) 
 
-    .EXAMPLE 
-    RDP COMPUTER123456 
+  .EXAMPLE 
+  RDP Computer123456 
 
-    .EXAMPLE 
-    RDP 123456 
-    #> 
+  .EXAMPLE 
+  RDP 123456 
+  #> 
 	param(
 	[Parameter(Mandatory=$true)]
 	[string]$computername)
@@ -417,7 +493,7 @@ function RDP {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 	#Start Remote Desktop Protocol on specifed workstation
@@ -425,26 +501,33 @@ function RDP {
 }#End RDP
 
 function GPR {
-    <# 
-    .SYNOPSIS 
-    Open Group Policy for specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Open Group Policy for specified workstation(s) 
 
-    .EXAMPLE 
-    GPR COMPUTER123456 
+  .EXAMPLE 
+  GPR Computer123456 
 
-    .EXAMPLE 
-    GPR 123456 
-    #> 
-	param(
-	[Parameter(Mandatory=$true)]
-	[string[]] $ComputerName)
-	if (($computername.length -eq 6)) {
-    		[int32] $dummy_output = $null;
+  .EXAMPLE 
+  GPR 123456 
+  #> 
+param(
+[Parameter(Mandatory=$true)]
+[string[]] $ComputerName)
 
-    	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
-	}
-		foreach ($Computer in $ComputerName) {
+if (($computername.length -eq 6)) {
+    [int32] $dummy_output = $null;
+
+    if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
+       	$computername = "Computer" + $computername.Replace("Computer","")}	
+}
+
+$i=0
+$j=0
+
+foreach ($Computer in $ComputerName) {
+
+    Write-Progress -Activity "Opening Remote Group Policy..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
 
 	#Opens (Remote) Group Policy for specified workstation
 	gpedit.msc /gpcomputer: $Computer
@@ -453,64 +536,77 @@ function GPR {
 }#End GPR
 
 function Enac {
-    <# 
-    .SYNOPSIS 
-    Enable User Account in AD; Requires proper permissions. Search by partial or full last name, manually enter SAM Account Name.
+  <# 
+  .SYNOPSIS 
+  Enable User Account in AD; Requires proper permissions. Search by partial or full last name, manually enter SAM Account Name.
   
-    .EXAMPLE 
-    Enac Smith
+  .EXAMPLE 
+  Enac Smith
 
-    .EXAMPLE 
-    Enac Smi 
-    #> 
+  .EXAMPLE 
+  Enac Smi 
+  #> 
 	$last = Read-Host -Prompt 'Search by Last Name'
+	
 	#Last Name search for Active Directory users - Returns First, Last, & SAM Account Name
 	Get-ADUser -Filter "Surname -like '$last*'" | FT GivenName,Surname,SamAccountName
+
 	#Enter desired SAM Account Name to enable user account, if disabled
-		Enable-ADAccount –Identity (Read-Host “Enter Desired Username”)
-	write-host("")
-	write-host("Specified Account Unlocked!")
-	write-host("")
+	Enable-ADAccount –Identity (Read-Host “Enter Desired Username”)
+
+	Write-Host("`nSpecified Account Unlocked!`n")
+
 }#End Enac
 
 function LastBoot {
-    <# 
-    .SYNOPSIS 
-    Retrieve last restart time for specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Retrieve last restart time for specified workstation(s) 
 
-    .EXAMPLE 
-    LastBoot COMPUTER123456 
+  .EXAMPLE 
+  LastBoot Computer123456 
 
-    .EXAMPLE 
-    LastBoot 123456 
-    #> 
+  .EXAMPLE 
+  LastBoot 123456 
+  #> 
     param([Parameter(Mandatory=$true)]
 	[string[]] $ComputerName)
 	if (($computername.length -eq 6)) {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
-foreach ($Computer in $ComputerName) {      
-    New-Object psobject -Property @{
-    "Computer Name" = $Computer
-    "Last Boot Time" = [Management.ManagementDateTimeConverter]::ToDateTime( (Get-WmiObject -Class Win32_OperatingSystem -Computer $Computer | Select -Exp "Last Boot Time") )}
+
+$i=0
+$j=0
+
+    foreach ($Computer in $ComputerName) {
+
+    Write-Progress -Activity "Retrieving Last Reboot Time..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+　
+        $computerOS = Get-WmiObject Win32_OperatingSystem -Computer $Computer
+
+        [pscustomobject] @{
+            "Computer Name" = $Computer
+            "Last Reboot"= $computerOS.ConvertToDateTime($computerOS.LastBootUpTime)
+        }
     }
 }#End LastBoot
 
 　
 function SYS {
-    <# 
-    .SYNOPSIS 
-    Retrieve basic system information for specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Retrieve basic system information for specified workstation(s) 
 
-    .EXAMPLE 
-    SYS COMPUTER123456 
+  .EXAMPLE 
+  SYS Computer123456 
 
-    .EXAMPLE 
-    SYS 123456 
-    #> 
+  .EXAMPLE 
+  SYS 123456 
+  #> 
 	param(
 	[Parameter(Mandatory=$true)]
 	[string[]] $ComputerName)
@@ -518,18 +614,24 @@ function SYS {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 $Stamp = (Get-Date -Format G) + ":"
 $ComputerArray = @()
 
-function Systeminformation {	
-foreach ($Computer in $ComputerArray) {
+$i=0
+$j=0
 
-	$x64 = "\\$computer\C$\Program Files (x86)"
+function Systeminformation {
 	
-    if(Test-Path -Path $x64) {
+    foreach ($Computer in $ComputerArray) {
+
+    Write-Progress -Activity "Getting Sytem Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+
+　
+　
+	Start-Job -ScriptBlock { param($computer) 
 	    #Gather specified workstation information; CimInstance only works on 64-bit
 	    $computerSystem = Get-CimInstance CIM_ComputerSystem -Computer $Computer
 	    $computerBIOS = Get-CimInstance CIM_BIOSElement -Computer $Computer
@@ -538,107 +640,100 @@ foreach ($Computer in $ComputerArray) {
 	    $computerHDD = Get-CimInstance Win32_LogicalDisk -Computer $Computer -Filter "DeviceID = 'C:'"
     
             [pscustomobject]@{
-                "Computer Name"=$Computer
+                "Computer Name"=$computerSystem.Name
                 "Last Reboot"=$computerOS.LastBootUpTime
                 "Operating System"=$computerOS.OSArchitecture + " " + $computerOS.caption
-                    Model=$computerSystem.Model
-                    RAM= "{0:N2}" -f [int]($computerSystem.TotalPhysicalMemory/1GB) + "GB"
+                 Model=$computerSystem.Model
+                 RAM= "{0:N2}" -f [int]($computerSystem.TotalPhysicalMemory/1GB) + "GB"
                 "Disk Capacity"="{0:N2}" -f ($computerHDD.Size/1GB) + "GB"
                 "Total Disk Space"="{0:P2}" -f ($computerHDD.FreeSpace/$computerHDD.Size) + " Free (" + "{0:N2}" -f ($computerHDD.FreeSpace/1GB) + "GB)"
                 "Current User"=$computerSystem.UserName
             }
-
-}
-	else {
-	    #Gather specified workstation information; uses WmiObject for 32-bit
-        $ComputerProgram = Get-WmiObject -class Win32_Product | Select-Object -Property Name | Sort-Object Name 
-        $computerSystem = Get-WmiObject Win32_ComputerSystem -Computer $Computer
-        $computerBIOS = Get-WmiObject Win32_BIOS -Computer $Computer
-        $computerOS = Get-WmiObject Win32_OperatingSystem -Computer $Computer
-        $computerCPU = Get-WmiObject Win32_Processor -Computer $Computer
-        $computerHDD = Get-WmiObject Win32_LogicalDisk -ComputerName $Computer -Filter drivetype=3
+	} -argumentlist $computer
 
 　
-            [pscustomobject]@{
-                "Computer Name"=$Computer
-                "Last Reboot"=$computerOS.ConvertToDateTime($computerOS.LastBootUpTime)
-                "Operating System"=$computerOS.OSArchitecture + " " + $computerOS.caption
-                    Model=$computerSystem.Model
-                    RAM= "{0:N2}" -f [int]($computerSystem.TotalPhysicalMemory/1GB) + "GB"
-                "Disk Capacity"="{0:N2}" -f ($computerHDD.Size/1GB) + "GB"
-                "Total Disk Space"="{0:P2}" -f ($computerHDD.FreeSpace/$computerHDD.Size) + " Free (" + "{0:N2}" -f ($computerHDD.FreeSpace/1GB) + "GB)"
-                "Current User"=$computerSystem.UserName
-            }
-    
-        		}
+    } 
+}
 
-    		} 
-	}
-
-	foreach ($computer in $ComputerName) {	     
-		If (Test-Connection -quiet -count 1 -Computer $Computer) {
+foreach ($computer in $ComputerName) {	     
+	If (Test-Connection -quiet -count 1 -Computer $Computer) {
 		    
-		    $ComputerArray += $Computer
-		}
+		$ComputerArray += $Computer
 	}
+}
 
-	$SystemInformation = SystemInformation | Sort ComputerName | Select "Computer Name", "Current User", "Operating System", Model, RAM, "Disk Capacity", "Total Disk Space", "Last Reboot"
-	$DocPath = [environment]::getfolderpath("mydocuments") + "\SystemInformation-Report.csv"
+$SystemInformation = SystemInformation | Wait-Job | Receive-Job | Sort ComputerName | Select "Computer Name", "Current User", "Operating System", Model, RAM, "Disk Capacity", "Total Disk Space", "Last Reboot"
+$DocPath = [environment]::getfolderpath("mydocuments") + "\SystemInformation-Report.csv"
 
-		Switch ($CheckBox.IsChecked){
-		    $true { $SystemInformation | Export-Csv $DocPath -NoTypeInformation -Force; }
-		    default { $SystemInformation | Out-GridView -Title "System Information"; }
+	Switch ($CheckBox.IsChecked){
+		$true { $SystemInformation | Export-Csv $DocPath -NoTypeInformation -Force; }
+		default { $SystemInformation | Out-GridView -Title "System Information"; }
 		
     }
 
 	if ($CheckBox.IsChecked -eq $true){
+
 	    Try { 
+
 		$listBox.Items.Add("$stamp Export-CSV to $DocPath!`n")
 	    } 
 
 	    Catch {
-		    #Do Nothing 
+
+		 #Do Nothing 
 	    }
 	}
 	
 	else{
+
 	    Try {
+
 	        $listBox.Items.Add("$stamp System Information output processed!`n")
 	    } 
+
 	    Catch {
+
 	        #Do Nothing 
 	    }
 	}
 }#End SYS
 
 function RmPrint {
-    <# 
-    .SYNOPSIS 
-    Remove printer drivers from registry of specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Remove printer drivers from registry of specified workstation(s) 
 
-    .EXAMPLE 
-    RmPrint COMPUTER123456 
+  .EXAMPLE 
+  RmPrint Computer123456 
 
-    .EXAMPLE 
-    RmPrint 123456 
-    #> 
+  .EXAMPLE 
+  RmPrint 123456 
+  #> 
 	param([Parameter(Mandatory=$true)]
 	[string[]]$computername)
 	if (($computername.length -eq 6)) {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 function RmPrintDrivers {
+
+$i=0
+$j=0
  	
 foreach ($Computer in $ComputerName) { 
+
+    Write-Progress -Activity "Clearing printer drivers..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+　
 	Try {
+
 		$RemoteSession = New-PSSession -ComputerName $Computer
-		write-host "Removing printer drivers... Please wait..."
 }
 	Catch {
+
 		"Something went wrong. Unable to connect to $Computer"
 		Break
 }
@@ -651,13 +746,14 @@ foreach ($Computer in $ComputerName) {
 		Restart-Service Spooler
 		Set-Service Spooler -startuptype automatic
 			}
-		}
-	} RmPrintDrivers
-}
-	Remove-PSSession *
+		} -AsJob -JobName "ClearPrintDrivers"
+	} 
+} RmPrintDrivers | Wait-Job | Remove-Job
+
+Remove-PSSession *
 
 [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
-$RMprintConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Print drivers have been cleared on workstation(s)!", "OKOnly,SystemModal,Information", "Success")
+$RMprintConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Printer driver removal triggered on workstation(s)!", "OKOnly,SystemModal,Information", "Success")
 
 }#End RmPrint
 
@@ -704,50 +800,65 @@ Remove-PSSession *
 
 　
 function NetMSG{
-    <# 
-    .SYNOPSIS 
-    Generate a pop-up window on specified workstation(s) with desired message 
+  <# 
+  .SYNOPSIS 
+  Generate a pop-up window on specified workstation(s) with desired message 
 
-    .EXAMPLE 
-    NetMSG COMPUTER123456 
+  .EXAMPLE 
+  NetMSG Computer123456 
 
-    .EXAMPLE 
-    NetMSG 123456 
-    #> 
+  .EXAMPLE 
+  NetMSG 123456 
+  #> 
 	#Network messaging is disabled on the domain - this is a workaround for the same type of results
 	param([Parameter(Mandatory=$true)][string[]] $ComputerName)
 	if (($computername.length -eq 6)) {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 	$ReadMe = read-host -prompt("Enter desired message")
 	$User = [Environment]::UserName
 	$UserInfo = Get-ADUser $User -Property Title | Select Title
 	$UserJob = $UserInfo.Title
-	
-foreach($Computer in $ComputerName){
-	$g = $ReadMe
-	$CallBack = "$User | 5-2444 | $UserJob"
 
-		#Invoke local MSG command on specified workstation - will generate pop-up message for any user logged onto that workstation - *Also shows on Login screen, stays there for 100,000 seconds or until interacted with
-		invoke-command -computername $Computer {
-		param($g, $CallBack, $User, $UserInfo, $UserJob) msg /time:100000 * /v "$g {$CallBack}"} -argumentlist $g, $CallBack, $User, $UserInfo, $UserJob}
+Function SendMessage {
+
+$i=0
+$j=0
+ 	
+foreach($Computer in $ComputerName){
+
+    Write-Progress -Activity "Sending messages..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+    $g = "$ReadMe"
+    $CallBack = "$User | 5-2444 | $UserJob"
+
+    #Invoke local MSG command on specified workstation - will generate pop-up message for any user logged onto that workstation - *Also shows on Login screen, stays there for 100,000 seconds or until interacted with
+    Invoke-Command -computername $Computer {
+
+	param($g, $CallBack, $User, $UserInfo, $UserJob)
+ 
+        msg /time:100000 * /v "$g {$CallBack}"
+    } -ArgumentList $g, $CallBack, $User, $UserInfo, $UserJob -AsJob}
+}
+
+SendMessage | Wait-Job | Remove-Job
 
 }#End NetMSG
 
 function SWcheck {
-    <# 
-    .SYNOPSIS 
-    Grabs all installed Software on specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Grabs all installed Software on specified workstation(s) 
 
-    .EXAMPLE 
-    SWcheck COMPUTER123456 
+  .EXAMPLE 
+  SWcheck Computer123456 
 
-    .EXAMPLE 
-    SWcheck 123456 
-    #> 
+  .EXAMPLE 
+  SWcheck 123456 
+  #> 
     param (
         [Parameter(ValueFromPipeline=$true)]
         [string[]]$ComputerName = $env:COMPUTERNAME,
@@ -756,14 +867,21 @@ function SWcheck {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 $Stamp = (Get-Date -Format G) + ":"
 $ComputerArray = @()
 
 function SoftwareCheck {
-    foreach ($computer in $ComputerArray) {
+
+$i=0
+$j=0
+
+foreach ($computer in $ComputerArray) {
+
+    Write-Progress -Activity "Retrieving Software Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+
         $keys = '','\Wow6432Node'
         foreach ($key in $keys) {
             try {
@@ -812,7 +930,7 @@ foreach ($computer in $ComputerName) {
 	    } 
 
 	    Catch {
-		    #Do Nothing 
+		 #Do Nothing 
 	    }
 	}
 	
@@ -828,16 +946,16 @@ foreach ($computer in $ComputerName) {
 
 　
 function JavaCache {
-    <# 
-    .SYNOPSIS 
-    Clear Java cache on specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Clear Java cache on specified workstation(s) 
 
-    .EXAMPLE 
-    JavaCache COMPUTER123456 
+  .EXAMPLE 
+  JavaCache Computer123456 
 
-    .EXAMPLE 
-    JavaCache 123456 
-    #> 
+  .EXAMPLE 
+  JavaCache 123456 
+  #> 
 [cmdletbinding()]
 	Param ( #Define a Mandatory name input
 	[Parameter(
@@ -850,19 +968,33 @@ function JavaCache {
 		[string]$progress = "Yes"
 	) #End Param
 
-ForEach ($computer in $name){
+function ClearJava {
 
-Try {
-	$RemoteSession = New-PSSession -ComputerName $computer
-	Invoke-Command -Session $RemoteSession -ScriptBlock {&"javaws" '-uninstall'}
-	Remove-PSSession *
-}
-Catch {
-	"Something went wrong. Can't connect to $computer. Sorry!"
-	Remove-PSSession *
-	Break
-		} 
-	}
+$i=0
+$j=0
+
+    ForEach ($computer in $name){
+
+        Write-Progress -Activity "Clearing Java Cache..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
+
+　
+        Try {
+	        $RemoteSession = New-PSSession -ComputerName $computer
+	
+	        Invoke-Command -Session $RemoteSession -ScriptBlock {&"javaws" '-uninstall'} -AsJob 
+	
+	        Remove-PSSession *
+        }
+        Catch {
+	        "Something went wrong. Can't connect to $computer. Sorry!"
+	        Remove-PSSession *
+	        Break
+		        } 
+        }
+    }
+
+ClearJava | Wait-Job | Remove-Job
+
 [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 $JavaConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Java cache has been cleared on workstation(s)!", "OKOnly,SystemModal,Information", "Success")
 }#End JavaCache
@@ -870,18 +1002,18 @@ $JavaConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Java cache has 
 　
 　
 function ADcleanup {
-    <# 
-    .SYNOPSIS 
-    Removes workstation(s) from Active Directory and SCCM 
+  <# 
+  .SYNOPSIS 
+  Removes workstation(s) from Active Directory and SCCM 
 
-    .EXAMPLE 
-    ADcleanup COMPUTER123456 
-    #> 
+  .EXAMPLE 
+  ADcleanup Computer123456 
+  #> 
 	Param([parameter(Mandatory = $true)] [string[]]$computerName,
 	#SCCM Site Name
     $SiteName="ABC",
 	#SCCM Server Name
-    $SCCMServer="SERVERV02")
+    $SCCMServer="SERVER1234")
 	#SCCM Namespace
     $SCCMNameSpace="root\sms\site_$SiteName"
 foreach ($Computer in $computerName) {
@@ -905,13 +1037,13 @@ $CleanConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Removed workst
 　
 function Nithins {  
 <# 
-    .SYNOPSIS 
-    Opens Nithin's SCCM Tools
+  .SYNOPSIS 
+  Opens Nithin's SCCM Tools
 
-    .EXAMPLE 
-    Nithins 
-    #> 
-	$pat1 = "\\SERVERa01\it\Applications\SCCM\ClientActionsTool.hta"
+  .EXAMPLE 
+  Nithins 
+  #> 
+	$pat1 = "\\SERVER12345\it\Applications\Microsoft (Multiple Items)\SCCM\ClientActionsTool.hta"
 	$dir1 = "C:\Program Files (x86)\SCCM Tools"
 	$des1 = $dir1 + "\ClientActionsTool.hta"
 if (!(Test-Path -Path $des1)) {
@@ -924,16 +1056,16 @@ if (!(Test-Path -Path $des1)) {
 }#End Nithins
 
 function CheckProcess {
-    <# 
-    .SYNOPSIS 
-    Grabs all processes on specified workstation(s).
+  <# 
+  .SYNOPSIS 
+  Grabs all processes on specified workstation(s).
 
-    .EXAMPLE 
-    CheckProcess COMPUTER123456 
+  .EXAMPLE 
+  CheckProcess Computer123456 
 
-    .EXAMPLE 
-    CheckProcess 123456 
-    #> 
+  .EXAMPLE 
+  CheckProcess 123456 
+  #> 
     param (
         [Parameter(ValueFromPipeline=$true)]
         [string[]]$ComputerName = $env:COMPUTERNAME,
@@ -942,7 +1074,7 @@ function CheckProcess {
     		[int32] $dummy_output = $null;
 
     	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
+        	$computername = "Computer" + $computername.Replace("Computer","")}	
 	}
 
 $Stamp = (Get-Date -Format G) + ":"
@@ -950,22 +1082,27 @@ $ComputerArray = @()
 
 function ChkProcess {
 
+$i=0
+$j=0
+
     foreach ($computer in $ComputerArray) {
+
+        Write-Progress -Activity "Retrieving System Processes..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
 
         $getProcess = Get-Process -ComputerName $computer
 
         foreach ($Process in $getProcess) {
                 
-                [pscustomobject]@{
+             [pscustomobject]@{
 		"Computer Name" = $computer
                 "Process Name" = $Process.ProcessName
                 PID = '{0:f0}' -f $Process.ID
                 Company = $Process.Company
                 "CPU(s)" = $Process.CPU
                 Description = $Process.Description
-                }           
-            }
-        } 
+             }           
+         }
+     } 
 }
 	
 foreach ($computer in $ComputerName) {	     
@@ -988,7 +1125,7 @@ foreach ($computer in $ComputerName) {
 	    } 
 
 	    Catch {
-		    #Do Nothing 
+		 #Do Nothing 
 	    }
 	}
 	
@@ -1005,37 +1142,44 @@ foreach ($computer in $ComputerName) {
 
 　
 function FindHotFixes {
-    <# 
-    .SYNOPSIS 
-    Grabs all processes on specified workstation(s).
+  <# 
+  .SYNOPSIS 
+  Grabs all processes on specified workstation(s).
 
-    .EXAMPLE 
-    FindHotFixes COMPUTER123456 
+  .EXAMPLE 
+  FindHotFixes Computer123456 
 
-    .EXAMPLE 
-    FindHotFixes 123456 
-    #> 
-    param (
-        [Parameter(ValueFromPipeline=$true)]
-        [string[]]$ComputerName = $env:COMPUTERNAME,
-        [string]$NameRegex = '')
-	if (($computername.length -eq 6)) {
-    		[int32] $dummy_output = $null;
+  .EXAMPLE 
+  FindHotFixes 123456 
+  #> 
+param (
+    [Parameter(ValueFromPipeline=$true)]
+    [string[]]$ComputerName = $env:COMPUTERNAME,
+    [string]$NameRegex = '')
 
-    	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "COMPUTER" + $computername.Replace("COMPUTER","")}	
-	}
+if(($computername.length -eq 6)) {
+    [int32] $dummy_output = $null;
 
-    $Stamp = (Get-Date -Format G) + ":"
-    $ComputerArray = @()
+    if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
+        $computername = "Computer" + $computername.Replace("Computer","")
+    }	
+}
 
-        function HotFix {
-	    foreach ($computer in $ComputerArray) {
+$Stamp = (Get-Date -Format G) + ":"
+$ComputerArray = @()
 
-	        Get-HotFix -Computername $computer
-        }
-    
-    }
+function HotFix {
+
+$i=0
+$j=0
+
+    foreach ($computer in $ComputerArray) {
+
+        Write-Progress -Activity "Retrieving HotFix Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+
+        Get-HotFix -Computername $computer 
+    }    
+}
 
 foreach ($computer in $ComputerName) {	     
     If (Test-Connection -quiet -count 1 -Computer $Computer) {
@@ -1049,7 +1193,7 @@ $DocPath = [environment]::getfolderpath("mydocuments") + "\HotFix-Report.csv"
 
     		Switch ($CheckBox.IsChecked){
     		    $true { $HotFix | Export-Csv $DocPath -NoTypeInformation -Force; }
-    		    default { $HotFix | Out-GridView -Title "Processes";  }
+    		    default { $HotFix | Out-GridView -Title "HotFix Report"; }
     		}
 
 	if($CheckBox.IsChecked -eq $true){
@@ -1058,7 +1202,7 @@ $DocPath = [environment]::getfolderpath("mydocuments") + "\HotFix-Report.csv"
 	    } 
 
 	    Catch {
-		    #Do Nothing 
+		 #Do Nothing 
 	    }
 	}
 	
@@ -1071,15 +1215,102 @@ $DocPath = [environment]::getfolderpath("mydocuments") + "\HotFix-Report.csv"
 	    }
 	}
 }#End FindHotFixes
+
+　
+function RmUserProf {
+
+<#
+.SYNOPSIS
+    Written by: JBear 1/31/2017
+	
+    Remove user profiles from a specified system.
+
+.DESCRIPTION
+    Remove user profiles from a specified system with the use of DelProf2.exe.
+
+.EXAMPLE
+    Remove-UserProfiles Computer123456
+
+        Note: Follow instructions and prompts to completetion.
+
+#>
+
+    param(
+        [parameter(mandatory=$true)]
+        [string[]]$computername
+    )
+
+　
+    function UseDelProf2 { 
+               
+        #Set parameters for remote computer and -WhatIf (/l)
+        $WhatIf = @(
+
+            "/l",
+            "/c:$computer" 
+        )
+           
+        #Runs DelProf2.exe with the /l parameter (or -WhatIf) to list potential User Profiles tagged for potential deletion
+        & "\\SERVER12345\it\Documentation\PowerShell\Scripts\DelProf2.exe" $WhatIf
+
+        #Display instructions on console
+        Write-Host "`n`nPLEASE ENSURE YOU FULLY UNDERSTAND THIS COMMAND BEFORE USE `nTHIS WILL DELETE ALL USER PROFILE INFORMATION FOR SPECIFIED USER(S) ON THE SPECIFIED WORKSTATION!`n"
+
+        #Prompt User for input
+        $DeleteUsers = Read-Host -Prompt "To delete User Profiles, please use the following syntax ; Wildcards (*) are accepted. `nExample: /id:user1 /id:smith* /id:*john*`n `nEnter proper syntax to remove specific users" 
+
+        #If only whitespace or a $null entry is entered, command is not run
+        if([string]::IsNullOrWhiteSpace($DeleteUsers)) {
+
+            Write-Host "`nImproper value entered, excluding all users from deletion. You will need to re-run the command on $computer, if you wish to try again...`n"
+
+        }
+
+        #If Read-Host contains proper syntax (Starts with /id:) run command to delete specified user; DelProf will give a confirmation prompt
+        elseif($DeleteUsers -like "/id:*") {
+
+            #Set parameters for remote computer
+            $UserArgs = @(
+
+                "/c:$computer"
+            )
+
+            #Split $DeleteUsers entries and add to $UserArgs array
+            $UserArgs += $DeleteUsers.Split("")
+
+            #Runs DelProf2.exe with $UserArgs parameters (i.e. & "C:\DelProf2.exe" /c:Computer1 /id:User1* /id:User7)
+            & "\\SERVER12345\it\Documentation\PowerShell\Scripts\DelProf2.exe" $UserArgs
+        }
+
+        #If Read-Host doesn't begin with the input /id:, command is not run
+        else {
+
+            Write-Host "`nImproper value entered, excluding all users from deletion. You will need to re-run the command on $computer, if you wish to try again...`n"
+        }
+    }
+
+    foreach($computer in $computername) {
+        if(Test-Connection -Quiet -Count 1 -Computer $Computer) { 
+
+            UseDelProf2 
+        }
+
+        else {
+            
+            Write-Host "`nUnable to connect to $computer. Please try again..." -ForegroundColor Red
+        }
+
+    }
+}#End RmUserProf
 #Install MSI files silently; enter workstation(s) into pipeline, then enter full MSI path into prompt
 function installMSI {
-    <# 
-    .SYNOPSIS 
-    Installs an MSI file on specified workstation; then specify MSI file location.
+  <# 
+  .SYNOPSIS 
+  Installs an MSI file on specified workstation; then specify MSI file location.
 
-    .EXAMPLE 
-    installMSI COMPUTER123456 
-    #> 
+  .EXAMPLE 
+  installMSI Computer123456 
+  #> 
 	[cmdletbinding()]
 	Param ( #Define a Mandatory name input
 	[Parameter(
@@ -1093,13 +1324,20 @@ function installMSI {
 	) #End Param
 
 #Edit only $path with desired starting .MSI path
-Write-Host ('Example: \\SERVERa01\it\installer.msi')
+Write-Host ('Example: \\SERVER12345\it\installer.msi')
 $NetPath = Read-Host -prompt("Enter full MSI path")
 
+$i=0
+$j=0
+
 ForEach ($computer in $name){
-	#Do not edit $DirDest or $InstallDir, these values are static
-	$DirDest = "\\$computer\C$\InstallationTemp\SETUP.msi"
-	$InstallDir = "\\$computer\C$\InstallationTemp\"
+
+    Write-Progress -Activity "Installing MSI..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
+
+    #Do not edit $DirDest or $InstallDir, these values are static
+    $DirDest = "\\$computer\C$\InstallationTemp\SETUP.msi"
+    $InstallDir = "\\$computer\C$\InstallationTemp\"
+
 Try {		
 	$RemoteSession = New-PSSession -ComputerName $computer
 		if(!(Test-Path -Path $InstallDir)) {
@@ -1133,13 +1371,13 @@ Catch {
 
 #Install EXE files silently; enter workstation(s) into pipeline, then enter full EXE path into prompt
 function installEXE{
-    <# 
-    .SYNOPSIS 
-    Installs an EXE file on specified workstation; then specify EXE file location.
+  <# 
+  .SYNOPSIS 
+  Installs an EXE file on specified workstation; then specify EXE file location.
 
-    .EXAMPLE 
-    installEXE COMPUTER123456 
-    #> 
+  .EXAMPLE 
+  installEXE Computer123456 
+  #> 
 	[cmdletbinding()]
 	Param ( #Define a Mandatory name input
 	[Parameter(
@@ -1153,57 +1391,69 @@ function installEXE{
 	) #End Param
 	
 #Edit only $path with desired starting .EXE path
-Write-Host ('Example: \\SERVER01\it\installer.exe')
+Write-Host ('Example: \\SERVER12345\it\installer.exe')
 $NetPath = Read-Host -prompt("Enter full EXE path")
 
-ForEach ($computer in $name){
+$i=0
+$j=0
+
+ForEach ($computer in $name) {
+
+    Write-Progress -Activity "Installing EXE..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
+
 	#Do not edit $Destination path
 	$Dest = "\\$computer\C$\InstallationTemp\SETUP.exe"
 	$InstallDir = "\\$computer\C$\InstallationTemp\"
-Try {	
-if(!(Test-Path -Path $InstallDir)) {
+
+Try {
+	
+    if(!(Test-Path -Path $InstallDir)) {
+
 	New-Item "$InstallDir" -type directory -Force | Out-Null
 	Copy-Item -Path "$NetPath" -Destination "$Dest" -force
-	}
+    }
 
-		if(!(Test-Path -Path $InstallDir)) {
-		New-Item "$InstallDir" -type directory -Force | Out-Null
-		Copy-Item -Path "$NetPath" -Destination "$Dest" -Force
-        }
-			Write-host "Attempting installation on $computer ... This may take several moments... Please Wait..`n"
+    if(!(Test-Path -Path $InstallDir)) {
 
-		Invoke-Command -Computername $computer { 
-		param ($dest) Start-Process $dest -ArgumentList "/s"} -argumentlist $dest
-		Write-Host "If no errors occured, installation should be successful!"
+        New-Item "$InstallDir" -type directory -Force | Out-Null
+	Copy-Item -Path "$NetPath" -Destination "$Dest" -Force
+    }
 
-		Remove-item "$InstallDir" -Recurse -Force | Out-Null
-	}
+    Write-host "Attempting installation on $computer ... This may take several moments... Please Wait..`n"
+
+    Invoke-Command -Computername $computer { 
+	param ($dest) Start-Process $dest -ArgumentList "/s"} -argumentlist $dest
+	Write-Host "If no errors occured, installation should be successful!"
+
+	Remove-item "$InstallDir" -Recurse -Force | Out-Null
+    }
+
 Catch {
-	"Something went wrong. Can't connect to $computer or filepath invalid. Sorry!`n"
-        Write-Host "Caught an exception:" -ForegroundColor Red
-        Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-        Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
-    	Remove-item "$InstallDir" -recurse -force | Out-Null
-	Remove-PSSession *
-	Break
+
+    "Something went wrong. Can't connect to $computer or filepath invalid. Sorry!`n"
+    Write-Host "Caught an exception:" -ForegroundColor Red
+    Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
+    Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
+
+    Remove-item "$InstallDir" -recurse -force | Out-Null
+
+    Remove-PSSession *
+    Break
 		}
 	}
 }#End installEXE
 
 function CrossCertRm {
-    <# 
-    .SYNOPSIS 
-    Executes the Cross Certificate removal application on specified workstation(s) 
+  <# 
+  .SYNOPSIS 
+  Executes the Cross Certificate removal application on specified workstation(s) 
 
-    .EXAMPLE 
-    CrossCertRm COMPUTER123456 
+  .EXAMPLE 
+  CrossCertRm Computer123456 
 
-    .EXAMPLE 
-    CrossCertRm 123456 
-
-    .EXAMPLE
-    CrossCertRm (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
-    #> 
+  .EXAMPLE
+  CrossCertRm (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
+  #> 
 [cmdletbinding()]
 	Param ( #Define a Mandatory name input
 	[Parameter(
@@ -1216,44 +1466,284 @@ function CrossCertRm {
 		[string]$progress = "Yes"
 	) #End Param
 
-function RemoveCertificates {
-Process
-{ #Process Each object on Pipeline
-ForEach ($computer in $name){
+    function RemoveCertificates {
 
-		Try {
-			$RemoteSession = New-PSSession -ComputerName $computer
-}
-	Catch {
-		"Can't connect. Bad Workstation name, User name or Password. Aborting run."
-	Break
-	}
+    $i=0
+    $j=0
 
-		New-Item "\\$computer\C$\Program Files\CrossCertRemoverTemp" -type directory -Force | Out-Null
-	}
+　
+　
+    ForEach ($computer in $name) {
 
-	Copy-Item -Path "\\SERVER01\it\Documentation\PowerShell\Profile Repository\FBCA_crosscert_remover_v114.exe" -Destination "\\$computer\C$\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.exe" -force
-	Copy-Item -Path "\\SERVER01\it\Documentation\PowerShell\Profile Repository\FBCA_crosscert_remover_v114.config" -Destination "\\$computer\C$\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.config" -force
+        Write-Progress -Activity "Removing Deprecated Certificates..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
 
-		Invoke-Command -Session $RemoteSession -ScriptBlock {Start-Process "C:\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.exe" -ArgumentList "/s" -NoNewWindow -wait}
+        Try {
+            $RemoteSession = New-PSSession -ComputerName $computer
+        }
 
-	Remove-Item "\\$computer\C$\Program Files\CrossCertRemoverTemp" -recurse -force
-	Remove-PSSession *
-		}
-	} RemoveCertificates
+        Catch {
+
+	    "Can't connect. Bad Workstation name, User name or Password. Aborting run."
+	    Break
+        }
+
+        New-Item "\\$computer\C$\Program Files\CrossCertRemoverTemp" -type directory -Force | Out-Null
+    }
+
+        Copy-Item -Path "\\SERVER12345\it\Documentation\PowerShell\Profile Repository\FBCA_crosscert_remover_v114.exe" -Destination "\\$computer\C$\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.exe" -force
+        Copy-Item -Path "\\SERVER12345\it\Documentation\PowerShell\Profile Repository\FBCA_crosscert_remover_v114.config" -Destination "\\$computer\C$\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.config" -force
+
+        Invoke-Command -Session $RemoteSession -ScriptBlock {
+
+            Start-Process "C:\Program Files\CrossCertRemoverTemp\FBCA_crosscert_remover_v114.exe" -ArgumentList "/s" -NoNewWindow -wait
+        }
+
+        Remove-Item "\\$computer\C$\Program Files\CrossCertRemoverTemp" -recurse -force
+        Remove-PSSession *
+	
+    } RemoveCertificates
 
 [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
 $CleanConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Invalid Certificate Authorities have been removed from workstation(s)!", "OKOnly,SystemModal,Information", "Success")
+
 }#End CrossCertRm
 
-function NewADuser {
-    <# 
-    .SYNOPSIS 
-    Creates new user profile in Active Directory by parsing the users' SAAR form
+function REARMOffice { 
 
-    .EXAMPLE 
-    NewADuser
-    #>
+<# 
+.SYNOPSIS 
+Written by JBear 3/7/2017
+
+.DESCRIPTION
+Copies and executes specifed filepath ($Path); AGM Office 2013 Activation Fix.
+
+#> 
+
+param([parameter(mandatory=$true)]
+    [string[]]$Computername,
+    
+    #Change network path to desired file, replace string as needed
+    $Path = "\\SERVER12345\IT\Applications\Microsoft (Multiple Items)\Office 2013 (AGM)\Office 2013 Fix\Office_ReArm 3-4-17\Office_2013_Rearm.exe",
+
+    #Retrieve Leaf object from $Path
+    $FileName = (Split-Path -Path $Path -Leaf),
+
+    #Static Temp location
+    $TempDir = "\\$Computer\C$\TempPatchDir\",
+
+    #Final filepath 
+    $Executable = "$TempDir\$FileName"
+)
+
+#Create function
+function InstallAsJob { 
+    
+    #Each item in $Computernam variable
+    ForEach($Computer in $Computername) {
+    
+        Write-Progress -Activity "Creating Office 2013 Rearm Job..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Computername.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Computername.count) * 100)
+
+        #If $Computer IS NOT null or only whitespace
+        if(!([string]::IsNullOrWhiteSpace($Computer))) {
+
+            #Test-Connection to $Computer
+            if(Test-Connection -Quiet -Count 1 $Computer) { 
+
+                #Create job on localhost
+                Start-Job { 
+                    
+                    #Create $TempDir directory
+                    New-Item -Type Directory $TempDir -Force | Out-Null
+
+                    #Copy needed installer files to remote machine
+                    Copy-Item -Path $Path -Destination $TempDir
+
+                    #If file is an EXE
+                    if($FileName -like "*.exe") {
+
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+                            
+                            #Start EXE file
+                            Start-Process $Executable -ArgumentList "/s" -Wait
+                            
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Rearm Office 2013" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+                    
+                    elseif($FileName -like "*.msi") {
+                    
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+
+                            #Start MSI file
+                            Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
+
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+
+                    elseif($FileName -like "*.msp") {
+                    
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+
+                            #Start MSP file
+                            Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
+
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+
+                    else {
+                    
+                        Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."
+                    }  
+                } -Name "$Computer Rearm Office2013" 
+            }
+            
+            else {
+            
+                Write-Host "Unable to connect to $Computer. Please try again..."
+            }
+        }
+    }
+}
+
+InstallAsJob
+
+Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"
+Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache."
+}
+
+function REARMWindows { 
+
+<# 
+.SYNOPSIS 
+Written by JBear 3/7/2017
+
+.DESCRIPTION
+Copies and executes specifed filepath ($Path); AGM Office 2013 Activation Fix.
+
+#> 
+
+param([parameter(mandatory=$true)]
+    [string[]]$Computername,
+    
+    #Change network path to desired file, replace string as needed
+    $Path = "\\SERVER12345\IT\Applications\AGM (AGM)\Activation Fixes\Windows\AGM10SystemUpdate.exe",
+
+    #Retrieve Leaf object from $Path
+    $FileName = (Split-Path -Path $Path -Leaf),
+
+    #Static Temp location
+    $TempDir = "\\$Computer\C$\TempPatchDir\",
+
+    #Final filepath 
+    $Executable = "$TempDir\$FileName"
+)
+
+#Create function
+function InstallAsJob { 
+    
+    #Each item in $Computernam variable
+    ForEach($Computer in $Computername) {
+    
+        Write-Progress -Activity "Creating Windows Activation Job..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Computername.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Computername.count) * 100)
+
+        #If $Computer IS NOT null or only whitespace
+        if(!([string]::IsNullOrWhiteSpace($Computer))) {
+
+            #Test-Connection to $Computer
+            if(Test-Connection -Quiet -Count 1 $Computer) { 
+
+                #Create job on localhost
+                Start-Job { 
+                    
+                    #Create $TempDir directory
+                    New-Item -Type Directory $TempDir -Force | Out-Null
+
+                    #Copy needed installer files to remote machine
+                    Copy-Item -Path $Path -Destination $TempDir
+
+                    #If file is an EXE
+                    if($FileName -like "*.exe") {
+
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+                            
+                            #Start EXE file
+                            Start-Process $Executable -ArgumentList "/s" -Wait
+                            
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Rearm Windows 7" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+                    
+                    elseif($FileName -like "*.msi") {
+                    
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+
+                            #Start MSI file
+                            Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
+
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+
+                    elseif($FileName -like "*.msp") {
+                    
+                        Invoke-Command -ComputerName $Computer { 
+                        
+                            param($TempDir, $FileName, $Executable)
+
+                            #Start MSP file
+                            Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
+
+                            #Remove $TempDir location from remote machine
+                            Remove-Item -Path $TempDir -Recurse -Force
+                        } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
+                    }
+
+                    else {
+                    
+                        Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."
+                    }  
+                } -Name "$Computer Rearm WIN7" 
+            }
+            
+            else {
+            
+                Write-Host "Unable to connect to $Computer. Please try again..."
+            }
+        }
+    }
+}
+
+InstallAsJob
+
+Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"
+Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache."
+}
+
+function NewADuser {
+  <# 
+  .SYNOPSIS 
+  Creates new user profile in Active Directory by parsing the users' SAAR form
+
+  .EXAMPLE 
+  NewADuser
+  #>
  
 #Load Visual Basic .NET Framework
 [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
@@ -1261,7 +1751,7 @@ function NewADuser {
 $CurrentUser = [environment]::getfolderpath("mydocuments") + "\SAAR Forms"
 
 If(!(Test-Path "C:\Program Files\SAARConverter")) { 
-	Copy-Item -Path "\\SERVER01\it\Documentation\PowerShell\SAARConverter" -Destination "C:\Program Files\" -Recurse
+	Copy-Item -Path "\\SERVER12345\it\Documentation\PowerShell\SAARConverter" -Destination "C:\Program Files\" -Recurse
 	}
 
 If(!(Test-Path "$CurrentUser")){
@@ -1842,4 +2332,5 @@ $Stamp = (Get-Date -Format G) + ":"
 #Show Form
 $Form.ShowDialog() | out-null
 }#EndGUI
+ 
  
