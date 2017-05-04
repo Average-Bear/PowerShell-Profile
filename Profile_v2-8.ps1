@@ -607,15 +607,11 @@ function SYS {
   .EXAMPLE 
   SYS 123456 
   #> 
-	param(
-	[Parameter(Mandatory=$true)]
-	[string[]] $ComputerName)
-	if (($computername.length -eq 6)) {
-    		[int32] $dummy_output = $null;
+param(
 
-    	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "Computer" + $computername.Replace("Computer","")}	
-	}
+    [Parameter(Mandatory=$true)]
+    [string[]] $ComputerName
+)
 
 $Stamp = (Get-Date -Format G) + ":"
 $ComputerArray = @()
@@ -625,44 +621,77 @@ $j=0
 
 function Systeminformation {
 	
-    foreach ($Computer in $ComputerArray) {
+    foreach ($Computer in $ComputerName) {
 
-    Write-Progress -Activity "Getting Sytem Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+        if(!([String]::IsNullOrWhiteSpace($Computer))) {
 
-　
-　
-	Start-Job -ScriptBlock { param($computer) 
-	    #Gather specified workstation information; CimInstance only works on 64-bit
-	    $computerSystem = Get-CimInstance CIM_ComputerSystem -Computer $Computer
-	    $computerBIOS = Get-CimInstance CIM_BIOSElement -Computer $Computer
-	    $computerOS = Get-CimInstance CIM_OperatingSystem -Computer $Computer
-	    $computerCPU = Get-CimInstance CIM_Processor -Computer $Computer
-	    $computerHDD = Get-CimInstance Win32_LogicalDisk -Computer $Computer -Filter "DeviceID = 'C:'"
+            If (Test-Connection -quiet -count 1 -Computer $Computer) {
+
+                Write-Progress -Activity "Getting Sytem Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+	            Start-Job -ScriptBlock { param($Computer) 
+
+	                #Gather specified workstation information; CimInstance only works on 64-bit
+	                $computerSystem = Get-CimInstance CIM_ComputerSystem -Computer $Computer
+	                $computerBIOS = Get-CimInstance CIM_BIOSElement -Computer $Computer
+	                $computerOS = Get-CimInstance CIM_OperatingSystem -Computer $Computer
+	                $computerCPU = Get-CimInstance CIM_Processor -Computer $Computer
+	                $computerHDD = Get-CimInstance Win32_LogicalDisk -Computer $Computer -Filter "DeviceID = 'C:'"
     
-            [pscustomobject]@{
-                "Computer Name"=$computerSystem.Name
-                "Last Reboot"=$computerOS.LastBootUpTime
-                "Operating System"=$computerOS.OSArchitecture + " " + $computerOS.caption
-                 Model=$computerSystem.Model
-                 RAM= "{0:N2}" -f [int]($computerSystem.TotalPhysicalMemory/1GB) + "GB"
-                "Disk Capacity"="{0:N2}" -f ($computerHDD.Size/1GB) + "GB"
-                "Total Disk Space"="{0:P2}" -f ($computerHDD.FreeSpace/$computerHDD.Size) + " Free (" + "{0:N2}" -f ($computerHDD.FreeSpace/1GB) + "GB)"
-                "Current User"=$computerSystem.UserName
-            }
-	} -argumentlist $computer
+                        [pscustomobject]@{
 
-　
+                            "Computer Name"=$computerSystem.Name
+                            "Last Reboot"=$computerOS.LastBootUpTime
+                            "Operating System"=$computerOS.OSArchitecture + " " + $computerOS.caption
+                             Model=$computerSystem.Model
+                             RAM= "{0:N2}" -f [int]($computerSystem.TotalPhysicalMemory/1GB) + "GB"
+                            "Disk Capacity"="{0:N2}" -f ($computerHDD.Size/1GB) + "GB"
+                            "Total Disk Space"="{0:P2}" -f ($computerHDD.FreeSpace/$computerHDD.Size) + " Free (" + "{0:N2}" -f ($computerHDD.FreeSpace/1GB) + "GB)"
+                            "Current User"=$computerSystem.UserName
+                        }
+	            } -ArgumentList $Computer
+            }
+
+            else {
+
+                Start-Job -ScriptBlock { param($Computer)  
+                     
+                    [pscustomobject]@{
+
+                        "Computer Name"=$Computer
+                        "Last Reboot"="Unable to PING."
+                        "Operating System"="$Null"
+                        Model="$Null"
+                        RAM="$Null"
+                        "Disk Capacity"="$Null"
+                        "Total Disk Space"="$Null"
+                        "Current User"="$Null"
+                    }
+                } -ArgumentList $Computer                       
+            }
+        }
+
+        else {
+                 
+            Start-Job -ScriptBlock { param($Computer)  
+                     
+                [pscustomobject]@{
+
+                    "Computer Name"="Value is null."
+                    "Last Reboot"="$Null"
+                    "Operating System"="$Null"
+                    Model="$Null"
+                    RAM="$Null"
+                    "Disk Capacity"="$Null"
+                    "Total Disk Space"="$Null"
+                    "Current User"="$Null"
+                }
+            } -ArgumentList $Computer
+        }
     } 
 }
 
-foreach ($computer in $ComputerName) {	     
-	If (Test-Connection -quiet -count 1 -Computer $Computer) {
-		    
-		$ComputerArray += $Computer
-	}
-}
-
-$SystemInformation = SystemInformation | Wait-Job | Receive-Job | Sort ComputerName | Select "Computer Name", "Current User", "Operating System", Model, RAM, "Disk Capacity", "Total Disk Space", "Last Reboot"
+$SystemInformation = SystemInformation | Wait-Job | Receive-Job | Select "Computer Name", "Current User", "Operating System", Model, RAM, "Disk Capacity", "Total Disk Space", "Last Reboot"
 $DocPath = [environment]::getfolderpath("mydocuments") + "\SystemInformation-Report.csv"
 
 	Switch ($CheckBox.IsChecked){
