@@ -1336,146 +1336,34 @@ function RmUserProf {
 
     }
 }#End RmUserProf
-#Install MSI files silently; enter workstation(s) into pipeline, then enter full MSI path into prompt
-function installMSI {
-  <# 
-  .SYNOPSIS 
-  Installs an MSI file on specified workstation; then specify MSI file location.
 
-  .EXAMPLE 
-  installMSI Computer123456 
-  #> 
-	[cmdletbinding()]
-	Param ( #Define a Mandatory name input
-	[Parameter(
-	ValueFromPipeline=$true,
-	ValueFromPipelinebyPropertyName=$true, 
-	Position=0)]
-	[Alias('Computer', 'ComputerName', 'Server', '__ServerName')]
-		[string[]]$name = $ENV:Computername,
-	[Parameter(Position=1)]
-		[string]$progress = "Yes"
-	) #End Param
-
-#Edit only $path with desired starting .MSI path
-Write-Host ('Example: \\SERVER12345\it\installer.msi')
-$NetPath = Read-Host -prompt("Enter full MSI path")
-
-$i=0
-$j=0
-
-ForEach ($computer in $name){
-
-    Write-Progress -Activity "Installing MSI..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
-
-    #Do not edit $DirDest or $InstallDir, these values are static
-    $DirDest = "\\$computer\C$\InstallationTemp\SETUP.msi"
-    $InstallDir = "\\$computer\C$\InstallationTemp\"
-
-Try {		
-	$RemoteSession = New-PSSession -ComputerName $computer
-		if(!(Test-Path -Path $InstallDir)) {
-		New-Item "$InstallDir" -type directory -Force | Out-Null
-		Copy-Item -Path "$NetPath" -Destination "$DirDest" -Force
-		}
-		Write-host "Attempting installation on $computer ... This may take several moments... Please Wait..`n"
-	
-		Invoke-Command -Session $RemoteSession -ScriptBlock {
-		#Do not edit $LocalDest, this value is static
-		$LocalDest = '"C:\InstallationTemp\SETUP.msi"'
-		Start-Process 'msiexec.exe' "/i $LocalDest /qn" -wait}
-
-		Write-Host "If no errors occured, installation should be successful!`n"
-	
-		Remove-item "$InstallDir" -Recurse -Force | Out-Null
-		Remove-PSSession *
-		
-	}
-Catch {
-	"Something went wrong. Can't connect to $computer or filepath invalid. Sorry!`n"
-        Write-Host "Caught an exception:" -ForegroundColor Red
-        Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-        Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
-	Remove-item "$InstallDir" -recurse -force | Out-Null
-	Remove-PSSession *
-	Break
-		}
-	}
-}#End installMSI
-
-#Install EXE files silently; enter workstation(s) into pipeline, then enter full EXE path into prompt
-function installEXE{
-  <# 
-  .SYNOPSIS 
-  Installs an EXE file on specified workstation; then specify EXE file location.
-
-  .EXAMPLE 
-  installEXE Computer123456 
-  #> 
-	[cmdletbinding()]
-	Param ( #Define a Mandatory name input
-	[Parameter(
-	ValueFromPipeline=$true,
-	ValueFromPipelinebyPropertyName=$true, 
-	Position=0)]
-	[Alias('Computer', 'Computername', 'Server', '__ServerName')]
-		[string[]]$name = $ENV:Computername,
-	[Parameter(Position=1)]
-		[string]$progress = "Yes"
-	) #End Param
-	
-#Edit only $path with desired starting .EXE path
-Write-Host ('Example: \\SERVER12345\it\installer.exe')
-$NetPath = Read-Host -prompt("Enter full EXE path")
-
-$i=0
-$j=0
-
-ForEach ($computer in $name) {
-
-    Write-Progress -Activity "Installing EXE..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $Name.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $Name.count) * 100)
-
-	#Do not edit $Destination path
-	$Dest = "\\$computer\C$\InstallationTemp\SETUP.exe"
-	$InstallDir = "\\$computer\C$\InstallationTemp\"
-
-Try {
-	
-    if(!(Test-Path -Path $InstallDir)) {
-
-	New-Item "$InstallDir" -type directory -Force | Out-Null
-	Copy-Item -Path "$NetPath" -Destination "$Dest" -force
-    }
-
-    if(!(Test-Path -Path $InstallDir)) {
-
-        New-Item "$InstallDir" -type directory -Force | Out-Null
-	Copy-Item -Path "$NetPath" -Destination "$Dest" -Force
-    }
-
-    Write-host "Attempting installation on $computer ... This may take several moments... Please Wait..`n"
-
-    Invoke-Command -Computername $computer { 
-	param ($dest) Start-Process $dest -ArgumentList "/s"} -argumentlist $dest
-	Write-Host "If no errors occured, installation should be successful!"
-
-	Remove-item "$InstallDir" -Recurse -Force | Out-Null
-    }
-
-Catch {
-
-    "Something went wrong. Can't connect to $computer or filepath invalid. Sorry!`n"
-    Write-Host "Caught an exception:" -ForegroundColor Red
-    Write-Host "Exception Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    Write-Host "Exception Message: $($_.Exception.Message)" -ForegroundColor Red
-
-    Remove-item "$InstallDir" -recurse -force | Out-Null
-
-    Remove-PSSession *
-    Break
-		}
-	}
-}#End installEXE
+function InstallPackage {        <#     .SYNOPSIS     Written by JBear 2/9/2017    Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
+    .DESCRIPTION     Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )       .EXAMPLE    .\InstallAsJob (Get-Content C:\ComputerList.txt)
+    .EXAMPLE    .\InstallAsJob Computer1, Computer2, Computer3    #> 
+    param([parameter(mandatory=$true)]        [string[]]$Computername,            #Installer location        [parameter(mandatory=$true)]        [string]$Path,
+        #Retrieve Leaf object from $Path        $FileName = (Split-Path -Path $Path -Leaf)    )
+    #Create function    function InstallAsJob {             #Each item in $Computernam variable        ForEach($Computer in $Computername) {
+            #If $Computer IS NOT null or only whitespace            if(!([string]::IsNullOrWhiteSpace($Computer))) {
+                #Test-Connection to $Computer                if(Test-Connection -Quiet -Count 1 $Computer) {                                #Static Temp location                    $TempDir = "\\$Computer\C$\TempPatchDir"
+                    #Final filepath                     $Executable = "$TempDir\$FileName" 
+                    #Create job on localhost                    Start-Job {                     param($Computername, $Computer, $Path, $Filename, $TempDir, $Executable)                                            #Create $TempDir directory                        New-Item -Type Directory $TempDir -Force | Out-Null
+                        #Copy needed installer files to remote machine                        Copy-Item -Path $Path -Destination $TempDir
+                        #If file is an EXE                        if($FileName -like "*.exe") {
+                            function InvokeEXE {
+                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)                                                                #Start EXE file                                    Start-Process $Executable -ArgumentList "/s" -Wait                                                                #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable                            }
+                            InvokeEXE | Wait-Job | Receive-Job                        }                                            elseif($FileName -like "*.msi") {                                                function InvokeMSI {
+                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)
+                                    #Start MSI file                                    Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
+                                    #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            }
+                            InvokeMSI | Wait-Job | Receive-Job                        }
+                        elseif($FileName -like "*.msp") {                                                function InvokeMSP {
+                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)
+                                    #Start MSP file                                    Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
+                                    #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable                            }
+                            InvokeMSP | Wait-Job | Receive-Job                        }
+                        else {                                                Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."                        }                      } -Name "Patch Job" -Argumentlist $Computername, $Computer, $Path, $Filename, $TempDir, $Executable                }                            else {                                Write-Host "Unable to connect to $Computer."                }            }        }    }
+    InstallAsJob
+    Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"    Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache." } #End InstallPackage
 
 function CrossCertRm {
   <# 
