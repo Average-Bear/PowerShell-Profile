@@ -838,65 +838,107 @@ function SWcheck {
         [Parameter(ValueFromPipeline=$true)]
         [string[]]$ComputerName = $env:COMPUTERNAME,
         [string]$NameRegex = '')
-	if (($computername.length -eq 6)) {
-    		[int32] $dummy_output = $null;
-
-    	if ([int32]::TryParse($computername , [ref] $dummy_output) -eq $true) {
-        	$computername = "Computer" + $computername.Replace("Computer","")}	
-	}
 
 $Stamp = (Get-Date -Format G) + ":"
-$ComputerArray = @()
-
-function SoftwareCheck {
-
 $i=0
 $j=0
 
-foreach ($computer in $ComputerArray) {
+    function SoftwareCheck {
 
-    Write-Progress -Activity "Retrieving Software Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerArray.count) * 100) + "%") -CurrentOperation "Processing $($computer)..." -PercentComplete ((($j++) / $ComputerArray.count) * 100)
+        foreach ($Computer in $ComputerName) {
 
-        $keys = '','\Wow6432Node'
-        foreach ($key in $keys) {
-            try {
-                $apps = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$computer).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall").GetSubKeyNames()
-            } catch {
-                continue
-            }
+            if(!([String]::IsNullOrWhiteSpace($Computer))) {
 
-            foreach ($app in $apps) {
-                $program = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$computer).OpenSubKey("SOFTWARE$key\Microsoft\Windows\CurrentVersion\Uninstall\$app")
-                $name = $program.GetValue('DisplayName')
-                if ($name -and $name -match $NameRegex) {
-                    [pscustomobject]@{
-                        "Computer Name" = $computer
-                        Software = $name
-                        Version = $program.GetValue('DisplayVersion')
-                        Publisher = $program.GetValue('Publisher')
-                        "Install Date" = $program.GetValue('InstallDate')
-                        "Uninstall String" = $program.GetValue('UninstallString')
-                        Bits = $(if ($key -eq '\Wow6432Node') {'64'} else {'32'})
-                        Path = $program.name
-                    }
+                if(Test-Connection -Quiet -Count 1 -Computer $Computer) {
+
+                    Write-Progress -Activity "Retrieving Software Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
+
+                    Start-Job -ScriptBlock { param($Computer,$NameRegex)    
+
+                        $Keys = '','\Wow6432Node'
+
+                        foreach ($Key in $keys) {
+
+                            try {
+
+                                $Apps = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$Computer).OpenSubKey("SOFTWARE$Key\Microsoft\Windows\CurrentVersion\Uninstall").GetSubKeyNames()
+                            } 
+            
+                            catch {
+
+                                Continue
+                            }
+
+                            foreach ($App in $Apps) {
+
+                                $Program = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$Computer).OpenSubKey("SOFTWARE$Key\Microsoft\Windows\CurrentVersion\Uninstall\$app")
+                                $Name = $Program.GetValue('DisplayName')
+
+                                if ($Name -and $Name -match $NameRegex) {
+
+                                    [pscustomobject]@{
+
+                                        "Computer Name" = $Computer
+                                        Software = $Name
+                                        Version = $Program.GetValue('DisplayVersion')
+                                        Publisher = $Program.GetValue('Publisher')
+                                        "Install Date" = $Program.GetValue('InstallDate')
+                                        "Uninstall String" = $Program.GetValue('UninstallString')
+                                        Bits = $(if ($Key -eq '\Wow6432Node') {'64'} else {'32'})
+                                        Path = $Program.name
+                                    }
+                                }
+                            }
+                        }
+                    } -Name "Software Check" -ArgumentList $Computer, $NameRegex 
+                }
+
+                else {
+
+                    Start-Job -ScriptBlock { param($Computer)  
+                     
+                        [pscustomobject]@{
+
+                            "Computer Name" = $Computer
+                            Software = "Unable to PING"
+                            Version = "N/A"
+                            Publisher = "N/A"
+                            "Install Date" = "N/A"
+                            "Uninstall String" = "N/A"
+                            Bits = "N/A"
+                            Path = "N/A"
+                        }
+                    } -ArgumentList $Computer                       
                 }
             }
-        } 
-    }
-}	
 
-foreach ($computer in $ComputerName) {	     
-    If (Test-Connection -quiet -count 1 -Computer $Computer) {
-		    
-        $ComputerArray += $Computer
+            else {
+                 
+                Start-Job -ScriptBlock { param($Computer)  
+                     
+                    [pscustomobject]@{
+
+                        "Computer Name" = $Computer
+                        Software = "Unable to PING"
+                        Version = "N/A"
+                        Publisher = "N/A"
+                        "Install Date" = "N/A"
+                        "Uninstall String" = "N/A"
+                        Bits = "N/A"
+                        Path = "N/A"
+                    }
+                } -ArgumentList $Computer
+            }
+        }
     }	
-}
-	$SoftwareCheck = SoftwareCheck | Sort "Computer Name" | Select "Computer Name", Software, Version, Publisher, "Install Date", "Uninstall String", Bits, Path
-    	$DocPath = [environment]::getfolderpath("mydocuments") + "\Software-Report.csv"
 
-    		Switch ($CheckBox.IsChecked){
-    		    $true { $SoftwareCheck | Export-Csv $DocPath -NoTypeInformation -Force; }
-    		    default { $SoftwareCheck | Out-GridView -Title "Software"; }
+$SoftwareCheck = SoftwareCheck | Wait-Job | Receive-Job | Select "Computer Name", Software, Version, Publisher, "Install Date", "Uninstall String", Bits, Path
+$DocPath = [environment]::getfolderpath("mydocuments") + "\Software-Report.csv"
+
+        Switch ($CheckBox.IsChecked){
+
+    	    $true { $SoftwareCheck | Export-Csv $DocPath -NoTypeInformation -Force; }
+    	    default { $SoftwareCheck | Out-GridView -Title "Software"; }
 		}
 		
 	if ($CheckBox.IsChecked -eq $true){
