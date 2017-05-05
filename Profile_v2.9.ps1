@@ -1,27 +1,20 @@
- $ProVersion = "v2.9"
+$ProVersion = "v2.9"
 <#
-
 PowerShell Profile $ProVersion
-
 Author: Jeremy DeWitt aka JBear
-
 Update Notes:
 Version 2.9:
 	- Added InstallPackage function to handle .EXE, .MSI, and .MSP installs in a single function.
         - Removed InstallEXE and InstallMSI functions.
 	- Updated SYS function to report items that are null or unable to be reached via PING.
-
 Version 2.8:
 	- Added Windows 7 and MSOffice 2013 activation functions to repo.
-
 Version 2.7:
 	- Added a progress bar to each feasible function.
 	- Fixed bug in CrossCertRm.
-
 Version 2.6:
 	- Fixed bug in LastBoot function.
 	- Modified GetSAM and HuntUser functions to accept multiple values per search.
-
 Version 2.5: 
 	- Updated SYS function to operate with jobs to allow Asynchronous/parallel commands.
 	- Will add job functionality to all possible functions to save time. 
@@ -29,68 +22,52 @@ Version 2.5:
 	- Added job functionality to JavaCache function.
 	- Added job functionality to NetMSG function.
 	- Tweaked RmUserProf function.
-
 Version 2.4: 
 	- Introduced DelProf2.exe to the environment for User Profile deletion and Account Unknown cleaning abilities.
 	- Wrote function including DelProf2.exe.
-
 Version 2.3:
 	- Upgraded GUI to XAML as opposed to WinForms.
 	- Added CSV output functionality to reports when Export-CSV checkbox is checked.
 	- Added test code for Create New User GUI. This is NOT functioning as currently intended.
-
 Version 2.2:
 	- Fixed bug in HotFix GUI button.
 	- Adding checkbox to output to CSV file.
-
 Version 2.1:
 	- Tweaked several function outputs to GridView instead of writing to the shell; allows for searching, filtering, etc. of all outputs.
 	- Added command completion pop-up messages for some functions.
 	- Added confirmation prompt to Reboot button in GUI.
 	- Added Windows Forms GUI capabilities to several functions; will continue to add.
-
 Version 2.0:
 	- Completed CreateNewUser function for automating User account creations and all helper functions.
 	- Fixed Nithins Test-Path to look for the .HTA file; issue would arise if you had used SCCM function prior to Nithins.
 	- Added .CSV removal from SAARConverter output folder to allow new files to pass through.
 	- Tweaked UpdateProfile function to push to PowerShell and PowerShell ISE.
-
 Version 1.9:
 	- Fixed syntax error in installEXE that was causing a $Variable to be null.
-
 Version 1.8:
 	- Added specific Home Path to 'cd' command; set location to \\SERVER12345\IT\Documentation\PowerShell\Scripts.
-
 Version 1.7:
 	- Moved repository to permanent location. Changed file references to reflect changes.
-
 Version 1.6:
 	- Added ability to enter only number portion of property numbers to RDP and Ghost.
 		(i.e. RDP 123456 or RDP Computer123456; Ghost 123456 or Ghost Computer123456)
 	- Updated Get-Help for all functions included in this repository.
-
 Version 1.5:
 	- Fixed bugs for InstallEXE and InstallMSI that were catching due to first if(!() statement.	
 	- Added custom MMC for SCCM Console.
-
 Version 1.4:
 	- Added remote GPupdate to interaction file | Commented out - processing issues.
 	- Working on bug fixes for 
-
 Version 1.3:
 	- Added ADcleanup function to interaction file.
 	- Added Nithins function, includes bringing down a local copy on current workstation.
-
 Version 1.2:
-
 	-Added Certificate removal function to list.
-
 Version 1.1:
 	- Removed InstallDate and Vendor from SWcheck function.
 	- Added version notes to file updating process.
 	- Changed Set-Location to my scripts folder "\\SERVER12345\transfer\JBear\Scripts".
 	- Bug fixes.
-
 	- Need to fix bugs in Create in SAARNewUser section.
 	
 #>
@@ -180,10 +157,8 @@ function cl {
   <# 
   .SYNOPSIS 
   Used to clear current PowerShell window
-
   .DESCRIPTION 
   Clears screen (same as clear) but, writes created 'PrintMenu' back onto the main shell for function reference
-
   .EXAMPLE 
   cl 
   #> 
@@ -233,7 +208,6 @@ function UpdateProfile {
   <# 
   .SYNOPSIS 
   Update PowerShell profile to current repository content
-
   .EXAMPLE 
   UpdateProfile 
   #> 
@@ -257,7 +231,6 @@ function SCCM {
   <# 
   .SYNOPSIS 
   Opens pre-generated Active Directory and SCCM mmc
-
   .EXAMPLE 
   SCCM  
   #> 
@@ -283,22 +256,17 @@ function GetSAM {
   <# 
   .SYNOPSIS 
   Retrieve users' SAM account name based on full or partial name search. 
-
   .Parameter GivenName
   Search user by Given Name. Default search is by Surname.
-
   .DESCRIPTION
   The GetSAM function uses the Get-ADUser cmdlet to query Active Directory for all users including the value entered (i.e. Users' first name (using -GivenName parameter), or users' last name (Default search Surname).
  
   .EXAMPLE 
   GetSAM Smith
-
   .EXAMPLE 
   GetSAM Smi 
-
   .EXAMPLE 
   GetSAM -GivenName John
-
   .EXAMPLE
   GetSAM -GivenName Jo
   #>
@@ -329,10 +297,8 @@ function HuntUser {
   <# 
   .SYNOPSIS 
   Retrieve workstation(s) last logged on by user (SAM Account Name)
-
   .DESCRIPTION 
   The HuntUser function will retrieve workstation(s) by the last logged on user (SAM Account Name). This queries SCCM; accuracy will depend on the last time each workstation has communicated with SCCM.
-
   .EXAMPLE 
   HuntUser dewittj 
   #> 
@@ -374,10 +340,8 @@ function LoggedUser{
   <# 
   .SYNOPSIS 
   Retrieve current user logged into specified workstations(s) 
-
   .EXAMPLE 
   LoggedUser Computer123456 
-
   .EXAMPLE 
   LoggedUser 123456 
   #> 
@@ -415,13 +379,10 @@ function Reboot {
   <# 
   .SYNOPSIS 
   Restarts specified workstation(s) 
-
   .EXAMPLE 
   Reboot Computer123456 
-
   .EXAMPLE 
   Reboot 123456 
-
   .EXAMPLE
   Reboot (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
   #> 
@@ -457,10 +418,8 @@ function Ghost {
   <# 
   .SYNOPSIS 
   Opens Ghost session to specified workstation(s) 
-
   .EXAMPLE 
   Ghost Computer123456 
-
   .EXAMPLE 
   Ghost 123456 
   #> 
@@ -484,10 +443,8 @@ function RDP {
   <# 
   .SYNOPSIS 
   Remote Desktop Protocol to specified workstation(s) 
-
   .EXAMPLE 
   RDP Computer123456 
-
   .EXAMPLE 
   RDP 123456 
   #> 
@@ -509,10 +466,8 @@ function GPR {
   <# 
   .SYNOPSIS 
   Open Group Policy for specified workstation(s) 
-
   .EXAMPLE 
   GPR Computer123456 
-
   .EXAMPLE 
   GPR 123456 
   #> 
@@ -547,7 +502,6 @@ function Enac {
   
   .EXAMPLE 
   Enac Smith
-
   .EXAMPLE 
   Enac Smi 
   #> 
@@ -567,10 +521,8 @@ function LastBoot {
   <# 
   .SYNOPSIS 
   Retrieve last restart time for specified workstation(s) 
-
   .EXAMPLE 
   LastBoot Computer123456 
-
   .EXAMPLE 
   LastBoot 123456 
   #> 
@@ -605,10 +557,8 @@ function SYS {
   <# 
   .SYNOPSIS 
   Retrieve basic system information for specified workstation(s) 
-
   .EXAMPLE 
   SYS Computer123456 
-
   .EXAMPLE 
   SYS 123456 
   #> 
@@ -736,10 +686,8 @@ function RmPrint {
   <# 
   .SYNOPSIS 
   Remove printer drivers from registry of specified workstation(s) 
-
   .EXAMPLE 
   RmPrint Computer123456 
-
   .EXAMPLE 
   RmPrint 123456 
   #> 
@@ -796,7 +744,6 @@ $RMprintConfirmation = [Microsoft.VisualBasic.Interaction]::MsgBox("Printer driv
 <#function rmOffice {
 $ErrorActionPreference= 'silentlycontinue'
 $Workstation = (Read-Host -Prompt "Enter Workstation")
-
 Try {
     $RemoteSession = New-PSSession -ComputerName $Workstation
 }
@@ -805,7 +752,6 @@ Catch {
     Break
 }
 Invoke-Command -Session $RemoteSession -ScriptBlock {
-
 	New-PSDrive -PSProvider registry -root HKEY_CLASSES_ROOT -Name HKCR
 	write-host ""
 	write-host "Removing Microsoft Office 2013 registry and file components... Please Wait..."
@@ -837,10 +783,8 @@ function NetMSG{
   <# 
   .SYNOPSIS 
   Generate a pop-up window on specified workstation(s) with desired message 
-
   .EXAMPLE 
   NetMSG Computer123456 
-
   .EXAMPLE 
   NetMSG 123456 
   #> 
@@ -886,10 +830,8 @@ function SWcheck {
   <# 
   .SYNOPSIS 
   Grabs all installed Software on specified workstation(s) 
-
   .EXAMPLE 
   SWcheck Computer123456 
-
   .EXAMPLE 
   SWcheck 123456 
   #> 
@@ -983,10 +925,8 @@ function JavaCache {
   <# 
   .SYNOPSIS 
   Clear Java cache on specified workstation(s) 
-
   .EXAMPLE 
   JavaCache Computer123456 
-
   .EXAMPLE 
   JavaCache 123456 
   #> 
@@ -1039,7 +979,6 @@ function ADcleanup {
   <# 
   .SYNOPSIS 
   Removes workstation(s) from Active Directory and SCCM 
-
   .EXAMPLE 
   ADcleanup Computer123456 
   #> 
@@ -1073,7 +1012,6 @@ function Nithins {
 <# 
   .SYNOPSIS 
   Opens Nithin's SCCM Tools
-
   .EXAMPLE 
   Nithins 
   #> 
@@ -1093,10 +1031,8 @@ function CheckProcess {
   <# 
   .SYNOPSIS 
   Grabs all processes on specified workstation(s).
-
   .EXAMPLE 
   CheckProcess Computer123456 
-
   .EXAMPLE 
   CheckProcess 123456 
   #> 
@@ -1179,10 +1115,8 @@ function FindHotFixes {
   <# 
   .SYNOPSIS 
   Grabs all processes on specified workstation(s).
-
   .EXAMPLE 
   FindHotFixes Computer123456 
-
   .EXAMPLE 
   FindHotFixes 123456 
   #> 
@@ -1258,15 +1192,11 @@ function RmUserProf {
     Written by: JBear 1/31/2017
 	
     Remove user profiles from a specified system.
-
 .DESCRIPTION
     Remove user profiles from a specified system with the use of DelProf2.exe.
-
 .EXAMPLE
     Remove-UserProfiles Computer123456
-
         Note: Follow instructions and prompts to completetion.
-
 #>
 
     param(
@@ -1337,42 +1267,143 @@ function RmUserProf {
     }
 }#End RmUserProf
 
-function InstallPackage {        <#     .SYNOPSIS     Written by JBear 2/9/2017    Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
-    .DESCRIPTION     Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )       .EXAMPLE    .\InstallAsJob (Get-Content C:\ComputerList.txt)
-    .EXAMPLE    .\InstallAsJob Computer1, Computer2, Computer3    #> 
-    param([parameter(mandatory=$true)]        [string[]]$Computername,            #Installer location        [parameter(mandatory=$true)]        [string]$Path,
-        #Retrieve Leaf object from $Path        $FileName = (Split-Path -Path $Path -Leaf)    )
-    #Create function    function InstallAsJob {             #Each item in $Computernam variable        ForEach($Computer in $Computername) {
-            #If $Computer IS NOT null or only whitespace            if(!([string]::IsNullOrWhiteSpace($Computer))) {
-                #Test-Connection to $Computer                if(Test-Connection -Quiet -Count 1 $Computer) {                                #Static Temp location                    $TempDir = "\\$Computer\C$\TempPatchDir"
-                    #Final filepath                     $Executable = "$TempDir\$FileName" 
-                    #Create job on localhost                    Start-Job {                     param($Computername, $Computer, $Path, $Filename, $TempDir, $Executable)                                            #Create $TempDir directory                        New-Item -Type Directory $TempDir -Force | Out-Null
-                        #Copy needed installer files to remote machine                        Copy-Item -Path $Path -Destination $TempDir
-                        #If file is an EXE                        if($FileName -like "*.exe") {
-                            function InvokeEXE {
-                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)                                                                #Start EXE file                                    Start-Process $Executable -ArgumentList "/s" -Wait                                                                #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable                            }
-                            InvokeEXE | Wait-Job | Receive-Job                        }                                            elseif($FileName -like "*.msi") {                                                function InvokeMSI {
-                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)
-                                    #Start MSI file                                    Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
-                                    #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            }
-                            InvokeMSI | Wait-Job | Receive-Job                        }
-                        elseif($FileName -like "*.msp") {                                                function InvokeMSP {
-                                Invoke-Command -ComputerName $Computer {                                                             param($TempDir, $FileName, $Executable)
-                                    #Start MSP file                                    Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
-                                    #Remove $TempDir location from remote machine                                    Remove-Item -Path $TempDir -Recurse -Force                                } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable                            }
-                            InvokeMSP | Wait-Job | Receive-Job                        }
-                        else {                                                Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."                        }                      } -Name "Patch Job" -Argumentlist $Computername, $Computer, $Path, $Filename, $TempDir, $Executable                }                            else {                                Write-Host "Unable to connect to $Computer."                }            }        }    }
-    InstallAsJob
-    Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"    Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache." } #End InstallPackage
+function InstallPackage {
+
+<#     
+.SYNOPSIS     
+Written by JBear 2/9/2017    
+Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
+
+.DESCRIPTION     
+Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
+
+.EXAMPLE    
+.\InstallAsJob (Get-Content C:\ComputerList.txt)
+
+.EXAMPLE    
+.\InstallAsJob Computer1, Computer2, Computer3    
+#> 
+
+param(
+
+    [parameter(mandatory=$true)]        
+    [string[]]$Computername,            
+    #Installer location        
+    [parameter(mandatory=$true)]        
+    [string]$Path,
+    #Retrieve Leaf object from $Path
+    $FileName = (Split-Path -Path $Path -Leaf)    
+)
+
+#Create function    
+function InstallAsJob {
+
+    #Each item in $Computernam variable        
+    ForEach($Computer in $Computername) {
+
+        #If $Computer IS NOT null or only whitespace
+        if(!([string]::IsNullOrWhiteSpace($Computer))) {
+
+            #Test-Connection to $Computer
+            if(Test-Connection -Quiet -Count 1 $Computer) { 
+                                               
+                #Static Temp location
+                $TempDir = "\\$Computer\C$\TempPatchDir"
+
+                #Final filepath
+                $Executable = "$TempDir\$FileName"
+                     
+                #Create job on localhost
+                Start-Job {
+                param($Computername, $Computer, $Path, $Filename, $TempDir, $Executable)
+                        
+                    #Create $TempDir directory
+                    New-Item -Type Directory $TempDir -Force | Out-Null
+
+                    #Copy needed installer files to remote machine
+                    Copy-Item -Path $Path -Destination $TempDir
+
+                    #If file is an EXE
+                    if($FileName -like "*.exe") {
+
+                        function InvokeEXE {
+
+                            Invoke-Command -ComputerName $Computer {
+                            param($TempDir, $FileName, $Executable)
+                                    
+                                #Start EXE file
+                                Start-Process $Executable -ArgumentList "/s" -Wait
+                                    
+                                #Remove $TempDir location from remote machine
+                                Remove-Item -Path $TempDir -Recurse -Force
+                            } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable
+                        }
+
+                        InvokeEXE | Wait-Job | Receive-Job                        
+                    }
+                                                                    
+                    elseif($FileName -like "*.msi") {
+
+                        function InvokeMSI {
+
+                            Invoke-Command -ComputerName $Computer {
+                            param($TempDir, $FileName, $Executable)
+
+                                #Start MSI file                                    
+                                Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
+
+                                #Remove $TempDir location from remote machine                                   
+                                Remove-Item -Path $TempDir -Recurse -Force                                
+                            } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            
+                        }
+
+                        InvokeMSI | Wait-Job | Receive-Job                        
+                    }
+
+                    elseif($FileName -like "*.msp") { 
+                                                                       
+                        function InvokeMSP {
+
+                            Invoke-Command -ComputerName $Computer {
+                            param($TempDir, $FileName, $Executable)
+
+                                #Start MSP file                                    
+                                Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
+
+                                #Remove $TempDir location from remote machine                                   
+                                Remove-Item -Path $TempDir -Recurse -Force                                
+                            } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
+                        }
+
+                        InvokeMSP | Wait-Job | Receive-Job                        
+                    }
+
+                    else {
+
+                        Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."                        
+                    }                      
+                } -Name "Patch Job" -Argumentlist $Computername, $Computer, $Path, $Filename, $TempDir, $Executable                
+            }
+                                            
+            else {                                
+                    
+                Write-Host "Unable to connect to $Computer."                
+            }            
+        }        
+    }   
+}
+
+InstallAsJob
+Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"    
+Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache." 
+}#End InstallPackage
 
 function CrossCertRm {
   <# 
   .SYNOPSIS 
   Executes the Cross Certificate removal application on specified workstation(s) 
-
   .EXAMPLE 
   CrossCertRm Computer123456 
-
   .EXAMPLE
   CrossCertRm (Get-Content C:\SomeDirectory\WhateverTextFileYouWant.txt)
   #> 
@@ -1435,10 +1466,8 @@ function REARMOffice {
 <# 
 .SYNOPSIS 
 Written by JBear 3/7/2017
-
 .DESCRIPTION
 Copies and executes specifed filepath ($Path); AGM Office 2013 Activation Fix.
-
 #> 
 
 param([parameter(mandatory=$true)]
@@ -1549,10 +1578,8 @@ function REARMWindows {
 <# 
 .SYNOPSIS 
 Written by JBear 3/7/2017
-
 .DESCRIPTION
 Copies and executes specifed filepath ($Path); AGM Office 2013 Activation Fix.
-
 #> 
 
 param([parameter(mandatory=$true)]
@@ -1662,7 +1689,6 @@ function NewADuser {
   <# 
   .SYNOPSIS 
   Creates new user profile in Active Directory by parsing the users' SAAR form
-
   .EXAMPLE 
   NewADuser
   #>
@@ -1707,15 +1733,11 @@ function CreateNewUser {
 .SYNOPSIS 
 Written by:
 JBear 11/2/2016
-
 Last Edited: 
 JBear 11/18/2016
-
 Requires: ActiveDirectory Module
             & PowerShell Version 3 or higher
-
 Creates a new active directory user from a template.
-
 Purpose of script to assist Help Desk with the creation of End-User accounts in Active Directory.
 #>
 
@@ -1964,14 +1986,12 @@ Until($SAMFound -eq $False)
         }
 
     <#Below
-
     <#Below section removed due to inability to cross Tiers; If capability ever becomes available again,
         will need to add ShareUtils to function.#>
 
     <#
     #Create user Home Drive based on $FileServer location
         if ($FileServer -eq 'Denver'){
-
 	            New-Item -Itemtype directory -Path "\\SERVERA03.acme.com\Home$\" -Name $SAM
      
                 #Create share and share permissions
@@ -1980,21 +2000,17 @@ Until($SAMFound -eq $False)
                 Get-Share -Name $SAM$ -ComputerName SERVERA03 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
                 Start-Sleep -Seconds 5
                 Get-Share -Name $SAM$ -ComputerName SERVERA03 | Remove-SharePermission -User Everyone | Set-Share
-
                 #Set ACLs on the folder
                 $directory = "\\SERVERA03.acme.com\Home$\$SAM"
                 $acl = Get-Acl $directory
                 $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
                 $acl.AddAccessRule($accessrule)
                 Set-Acl -AclObject $acl $directory
-
 	            #Map user's H: drive to their AD account
 	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa03\$SAM$"        
         
         }
-
         elseif ($FileServer -eq 'Salt Lake City') {
-
 	            New-Item -Itemtype directory -Path "\\SERVERA04.acme.com\Home$\" -Name $SAM
      
                 #Create share and share permissions
@@ -2003,21 +2019,17 @@ Until($SAMFound -eq $False)
                 Get-Share -Name $SAM$ -ComputerName SERVERA04 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
                 Start-Sleep -Seconds 5
                 Get-Share -Name $SAM$ -ComputerName SERVERA04 | Remove-SharePermission -User Everyone | Set-Share
-
                 #Set ACLs on the folder
                 $directory = "\\SERVERA04.acme.com\Home$\$SAM"
                 $acl = Get-Acl $directory
                 $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
                 $acl.AddAccessRule($accessrule)
                 Set-Acl -AclObject $acl $directory
-
 	            #Map user's H: drive to their AD account
 	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa04\$SAM$"    
         
         }
-
         else {
-
 	            #Create folder
 	            New-Item -Itemtype directory -Path "\\SERVERA05.acme.com\Home$\" -Name $SAM
      
@@ -2027,14 +2039,12 @@ Until($SAMFound -eq $False)
                 Get-Share -Name $SAM$ -ComputerName SERVERA05 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
                 Start-Sleep -Seconds 5
                 Get-Share -Name $SAM$ -ComputerName SERVERA05 | Remove-SharePermission -User Everyone | Set-Share
-
                 #Set ACLs on the folder
                 $directory = "\\SERVERA05.acme.com\Home$\$SAM"
                 $acl = Get-Acl $directory
                 $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
                 $acl.AddAccessRule($accessrule)
                 Set-Acl -AclObject $acl $directory
-
 	            #Map user's H: drive to their AD account
 	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa05\$SAM$"
             }#>
@@ -2067,9 +2077,7 @@ $inputXML = @"
         xmlns:local="clr-namespace:BearNecessities"
         mc:Ignorable="d"
         Title="Bear Necessities | v2.3" Height="510" Width="750" BorderBrush="#FF211414" Background="#FF6C6B6B" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
-
     <Grid>
-
         <Image Height="256" HorizontalAlignment="Left" Name="image1" Stretch="Fill" VerticalAlignment="Top" Width="192" SnapsToDevicePixels="False" Source="$MyDocuments" />
         <TextBox Name="TextBox" Text="$env:ComputerName" Height="276" HorizontalAlignment="Left" Margin="584,27,0,0"  VerticalAlignment="Top" Width="132" Background="Black" Foreground="White" Cursor="IBeam" CharacterCasing="Upper" AcceptsReturn="True" TextWrapping="Wrap" AcceptsTab="True"/>
         <Label Content="**Separate with commas(,)" Height="28" HorizontalAlignment="Left" Margin="580,297,0,0" VerticalAlignment="Top" />
@@ -2085,7 +2093,6 @@ $inputXML = @"
         <Button Name="Clear" Background="White" BorderBrush="Black" BorderThickness="2" Content="Clear" FontFamily="Arial" FontSize="12" FontWeight="Bold" Foreground="Black" Height="25" HorizontalAlignment="Left" Margin="175,235,0,0" VerticalAlignment="Top" Width="110" />
 	<Button Name="Processes" Background="Black" BorderBrush="Black" BorderThickness="2" Content="Check Processes" FontFamily="Arial" FontSize="10" FontWeight="Normal" Foreground="White" Height="32" HorizontalAlignment="Left" Margin="395,372,0,0" VerticalAlignment="Top" Width="104" />
         <CheckBox Name="CheckBox" Content="Export-CSV" Height="16" HorizontalAlignment="Left" Margin="305,245,0,0" VerticalAlignment="Top" IsChecked="False" />
-
         
     </Grid>
 </Window>               
@@ -2254,5 +2261,3 @@ $Stamp = (Get-Date -Format G) + ":"
 #Show Form
 $Form.ShowDialog() | out-null
 }#EndGUI
- 
- 
