@@ -1,4 +1,4 @@
- $ProVersion = "v2.8"
+ $ProVersion = "v2.9"
 <#
 
 PowerShell Profile $ProVersion
@@ -6,6 +6,11 @@ PowerShell Profile $ProVersion
 Author: Jeremy DeWitt aka JBear
 
 Update Notes:
+Version 2.9:
+	- Added InstallPackage function to handle .EXE, .MSI, and .MSP installs in a single function.
+        - Removed InstallEXE and InstallMSI functions.
+	- Updated SYS function to report items that are null or unable to be reached via PING.
+
 Version 2.8:
 	- Added Windows 7 and MSOffice 2013 activation functions to repo.
 
