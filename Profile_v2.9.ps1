@@ -1,8 +1,13 @@
-$ProVersion = "v2.9"
+$ProVersion = "v3.0.2"
 <#
 PowerShell Profile $ProVersion
 Author: Jeremy DeWitt aka JBear
 Update Notes:
+Version 3.0.2: 
+	-Renamed NewADUser to CreateNewUser. 
+	-Added GUI to CreateNewUser process. 
+Version 3.0.1: 
+	-Added PatchSearch function to report specific patches and install times.
 Version 2.9:
 	- Added InstallPackage function to handle .EXE, .MSI, and .MSP installs in a single function.
         - Removed InstallEXE and InstallMSI functions.
