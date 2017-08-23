@@ -1893,269 +1893,145 @@ Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check prog
 Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache."
 }
 
-function NewADuser {
-  <# 
-  .SYNOPSIS 
-  Creates new user profile in Active Directory by parsing the users' SAAR form
-  .EXAMPLE 
-  NewADuser
-  #>
- 
-#Load Visual Basic .NET Framework
-[Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
-
-$CurrentUser = [environment]::getfolderpath("mydocuments") + "\SAAR Forms"
-
-If(!(Test-Path "C:\Program Files\SAARConverter")) { 
-	Copy-Item -Path "\\SERVER12345\it\Documentation\PowerShell\SAARConverter" -Destination "C:\Program Files\" -Recurse
-	}
-
-If(!(Test-Path "$CurrentUser")){
-	New-Item -Itemtype Directory -Path "$CurrentUser"
-	$SAMError = [Microsoft.VisualBasic.Interaction]::MsgBox("$CurrentUser path has been created`n"+"Please place SAAR Forms in this location and try again...", "OKOnly,SystemModal", "Error")
-		Break;
-	}
-
-Copy-Item -Path "$CurrentUser\*.PDF" -Destination "C:\Program Files\SAARConverter\Release\Input" -Recurse
-
-	#Execute ConvertSAAR function
-	ConvertSAAR	
-	
-	#Execute CreateNewUser function
-	CreateNewUser
-
-	#Clear contents of Output folder
-	Remove-Item -Path "C:\Program Files\SAARConverter\Release\Output\*.CSV" -Recurse -Force
-}#End NewADuser
-
-function ConvertSAAR {
-$SAARpre = "C:\Program Files\SAARConverter\Release"
-cd $SAARpre
-cmd.exe /c SAARConverter.exe "C:\Program Files\SAARConverter\Release\Input" "C:\Program Files\SAARConverter\Release\Output\Output.csv"
-cd ~ 
-}#End ConvertSAAR
-
-　
 function CreateNewUser {
+
+
+    Start-Process powershell.exe -ArgumentList '-NonInteractive -WindowStyle Hidden "CallNewUserGUI"'
+
+}
+
+function CallNewUserGUI {
+
+$Users = Import-Csv -Path "C:\Users\PrimeOptimus\Documents\Output.csv"
+
+    function GenerateUser { 
+
     <#
-.SYNOPSIS 
-Written by:
-JBear 11/2/2016
-Last Edited: 
-JBear 11/18/2016
-Requires: ActiveDirectory Module
-            & PowerShell Version 3 or higher
-Creates a new active directory user from a template.
-Purpose of script to assist Help Desk with the creation of End-User accounts in Active Directory.
-#>
+    .SYNOPSIS 
+        Creates a new active directory user from a template.
 
-　
-#Script requires ActiveDirectory Module to be loaded
-Import-Module ActiveDirectory
+        Purpose of script to assist Help Desk with the creation of End-User accounts in Active Directory.
 
-　
-#Import all User information from CSV generated from ConvertSAAR program
-$Users = Import-Csv -Path "C:\Program Files\SAARConverter\Release\Output\Output.csv"
+    .NOTES
+        Written by:
+        Greg & JBear 11/2/2016
 
-　
-#Filter each line of Output.csv individually
-ForEach ($User in $Users) { 
-    
+        Last Edited: 
+        JBear 12/24/2016 - Edited to interact with GUI.
+        JBear 8/1/2017 - Fixed array looping issue.
+      
+        Requires: ActiveDirectory Module
+                & PowerShell Version 3 or higher
+    #>
 
-    #User account information variables
-    $Designation = $(
+        #Script requires ActiveDirectory Module to be loaded
+        Import-Module ActiveDirectory
 
-        If($User.Citizenship -EQ "3") {
-            "USA"
-        }
-                       
-        ElseIf($User.Citizenship -EQ "2") {
-            "CND"
-        }
+        #User account information variables
+        $Designation = $designationTextBox.Text
+        $UserFirstname = $firstnameTextBox.Text
+        $UserInitial = $middleinTextBox.Text
+        $UserLastname = $lastnameTextBox.Text 
+        $SupervisorEmail = $supervisoremailTextBox.Text
+        $UserCompany = $organizationTextBox.Text
+        $UserDepartment =  $departmentTextBox.Text
+        $UserJobTitle = $jobtitleTextBox.Text
+        $OfficePhone = $phoneTextBox.Text
+        $Description = $descriptionTextBox.Text
+        $Email = $emailTextBox.Text                                                              
+        $Displayname = $(
+     
+            If([string]::IsNullOrWhiteSpace($middleinTextBox.Text)) {
 
-        ElseIf($User.Designation -EQ "1") {
-            "Sector 01"
-        }
-
-        ElseIf($User.Designation -EQ "2") {
-            "Sector 02"
-        })
-                                                                     
-    $Displayname = $(
-
-        If($User.MiddleIn -EQ $Null){
-            $User.LastName + ", " + $User.FirstName + " $Designation"
-        }
+                $UserLastname + ", " + $UserFirstname + " $Designation"
+            }
         
-        ElseIf(!($User.MiddleIn -EQ $Null)){
-            $User.LastName + ", " + $User.FirstName + " " + $User.MiddleIn + " $Designation"
-        })
+            Else {
+
+                $UserLastname + ", " + $UserFirstname + " " + $UserInitial + " $Designation"
+            }
+        )
  
-    $UserFirstname = $User.FirstName
-    $UserInitial = $User.MiddleIn
-    $UserLastname = $User.LastName  
-    $SupervisorEmail = $User.SupervisorEmail
-    $UserCompany = $User.Company
-    $UserDepartment =  $User.Department
-    $Citizenship = $User.Citizenship
-    $FileServer = $User.Location
-    $UserJobTitle = $User.JobTitle
-    $OfficePhone = $User.Phone
-    $Description = $(
-	
-	If($User.Citizenship -eq 2){
-            "Domain User (FN)"
+        $Info = $(
+
+	        $Date = Get-Date
+	        "Account Created: " + $Date.ToShortDateString() + " " + $Date.ToShortTimeString() + " - " +  [Environment]::UserName
+        )
+
+        $Password = '7890&*()uiopUIOP'
+        $Template = ( $templatesListBox.items | where {$_.Isselected -eq $true} ).Name
+        $FindSuperV = Get-ADUser -Filter { ( mail -Like $User.SupervisorEmail ) } -ErrorAction SilentlyContinue
+        $FindSuperV = $FindSuperV | select -First "1" -ExpandProperty SamAccountName
+
+        #Load Visual Basic .NET Framework
+        [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
+
+　
+        #Do{ process } Until( )
+        Do { 
+
+            #Continue if $True
+            While($True) {
+
+                $SAM = [Microsoft.VisualBasic.Interaction]::InputBox("Enter desired Username for $Displayname :", "Create Username", "") 
+            
+                #Will loop if no value is supplied for $SAM
+                If($SAM -ne "$Null") {
+
+                    #If AD user exists, throw error warning; loop back to $SAM input
+                    Try {
+
+                        #On error, jump to Catch { }
+                        $FindSAM = Get-ADUser $SAM -ErrorAction Stop
+                        $SAMError = [Microsoft.VisualBasic.Interaction]::MsgBox("Username [$SAM] already in use by: " + $FindSAM.Name + "`nPlease try again...", "OKOnly,SystemModal", "Error")
+                    }#Try
+
+                    #On -EA Stop, specified account doesn't exist; continue with creation
+                    Catch {
+
+                        $SAMFound = $False 
+                        Break;   
+                    }
+                }
+            }
         }
-	
-	ElseIf($User.Citizenship -eq 1){
-            "Domain User"
-        })
 
-    $Email = $User.Email
-    $Info = $(
-	$Date = Get-Date
-	"Account Created: " + $Date.ToShortDateString() + " " + $Date.ToShortTimeString() + " - " +  [Environment]::UserName
-    )
+    #Break from Do { } when $SAMFound is $False
+    Until($SAMFound -eq $False) 
 
-    $FindSuperV = Get-ADUser -Filter {(mail -like $User.SupervisorEmail)}
-    $FindSuperV = $FindSuperV | select -First "1" -ExpandProperty SamAccountName
+        #Parameters from Template User Object
+        $AddressPropertyNames = @("StreetAddress","State","PostalCode","POBox","Office","Country","City")
+        $SchemaNamingContext = (Get-ADRootDSE).schemaNamingContext
+        $PropertiesToCopy = Get-ADObject -Filter "objectCategory -eq 'CN=Attribute-Schema,$SchemaNamingContext' -and searchflags -eq '16'" -SearchBase $SchemaNamingContext -Properties * |  
+                            Select -ExpandProperty lDAPDisplayname
 
-    $Password = 'Th!sP@55w0rd$uCk5'
+        $PropertiesToCopy += $AddressPropertyNames
+        $Password_SS = ConvertTo-SecureString -String $Password -AsPlainText -Force
+        $Template_Obj = Get-ADUser -Identity $Template -Properties $PropertiesToCopy
+        $OU = $Template_Obj.DistinguishedName -replace '^cn=.+?(?<!\\),'
 
-　
-    #Prompt header and message display
-    $Caption = "Choose Employer Template";
-    $Message = "Please Select The Proper User Template for $Displayname";
+        #Replace SAMAccountName of Template User with new account for properties like the HomeDrive that need to be dynamic
+        $Template_Obj.PSObject.Properties | where {
 
-    $Caption2 = "Are you sure?"
-    $Message2 = "You have selected $Template for $Displayname :"
-
-　
-    #Prompt options for user templates
-    $Alutiiq = New-Object System.Management.Automation.Host.ChoiceDescription "&Template01","Template01";
-    $Berry = New-Object System.Management.Automation.Host.ChoiceDescription "&Template02","Template02";
-    $Chugach = New-Object System.Management.Automation.Host.ChoiceDescription "&Template03","Template03";
-    $FireDept = New-Object System.Management.Automation.Host.ChoiceDescription "&Template04","Template04";
-    $Hospital= New-Object System.Management.Automation.Host.ChoiceDescription "&Template05","Template05";
-    $KRS = New-Object System.Management.Automation.Host.ChoiceDescription "&Template06","Template06";
-    $Seabee = New-Object System.Management.Automation.Host.ChoiceDescription "&Template07","Template07";
-    $USAGKA = New-Object System.Management.Automation.Host.ChoiceDescription "&Template08","Template08";
-
-    $Yes = New-Object System.Management.Automation.Host.ChoiceDescription "&Yes","Yes";
-    $No = New-Object System.Management.Automation.Host.ChoiceDescription "&No","No";
-
-　
-    #Array of choices
-    $Choices = ([System.Management.Automation.Host.ChoiceDescription[]](
-                    $Template01,$Template02,$Template03,$Template04,$Template05,$Template06,$Template07,$Template08));
-
-    $Choices2 = ([System.Management.Automation.Host.ChoiceDescription[]](
-                    $Yes,$No));
-
-　
-    #Display template choices
-    while($true) { 
-        $Answer = $host.ui.PromptForChoice($Caption,$Message,$Choices,5);
-
-　
-        #Set $Answer variable based on user selection
-        switch ($Answer) {
-
-                #Values are SAM names of Templates
-                0 { $Template = ("Template01"); $Answer2 }
-                1 { $Template = ("Template02"); $Answer2 }
-                2 { $Template = ("Template03"); $Answer2 }
-                3 { $Template = ("Template04"); $Answer2 }
-                4 { $Template = ("Template05"); $Answer2 }
-                5 { $Template = ("Template06"); $Answer2 }
-                6 { $Template = ("Template07"); $Answer2 }
-                7 { $Template = ("Template08"); $Answer2 }
-            }#Switch
-       
-
-        #Confirm selected choice
-        $Message2 = "You have selected $Template for $Displayname :"
-       
-        $Answer2 = $host.ui.PromptForChoice($Caption2,$Message2,$Choices2,1);
-
-       
-        #Loop back to $Answer, if No; continue, if Yes
-        if($Answer2 -eq 0) {
-                break;
-            }#If
-        
-        }#While
-
-　
-#Load Visual Basic .NET Framework
-[Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
-
-　
-    #Do{ process } Until( )
-    Do{ 
-
-        #Continue if $True
-        While($True) {
-            $SAM = [Microsoft.VisualBasic.Interaction]::InputBox("Enter desired Username for $Displayname :", "Create Username", "") 
-            
-            #Will loop if no value is supplied for $SAM
-            If($SAM -ne "$Null"){
-
-                #If AD user exists, throw error warning; loop back to $SAM input
-                Try {
-
-                    #On error, jump to Catch { }
-                    $FindSAM = Get-ADUser $SAM -ErrorAction Stop
-                    $SAMError = [Microsoft.VisualBasic.Interaction]::MsgBox("Username [$SAM] already in use by: " + $FindSAM.Name + "`nPlease try again...", "OKOnly,SystemModal", "Error")
-                }#Try
-
-                #On -EA Stop, specified account doesn't exist; continue with creation
-                Catch {
-                    $SAMFound = $False 
-                    Break;   
-                }#Catch
-            }#If
-        }#While
-    }#Do
-
-#Break from Do { } when $SAMFound is $False
-Until($SAMFound -eq $False)
-            
-
-    #Parameters from Template User Object
-    $AddressPropertyNames = @("StreetAddress","State","PostalCode","POBox","Office","Country","City")
-
-    $SchemaNamingContext = (Get-ADRootDSE).schemaNamingContext
-
-    $PropertiesToCopy = Get-ADObject -Filter "objectCategory -eq 'CN=Attribute-Schema,$SchemaNamingContext' -and searchflags -eq '16'" -SearchBase $SchemaNamingContext -Properties * |  
-        Select -ExpandProperty lDAPDisplayname
-
-    $PropertiesToCopy += $AddressPropertyNames
-
-    $Password_SS = ConvertTo-SecureString -String $Password -AsPlainText -Force
-    $Template_Obj = Get-ADUser -Identity $Template -Properties $PropertiesToCopy
-
-    $OU = $Template_Obj.DistinguishedName -replace '^cn=.+?(?<!\\),'
-
-    #Replace SAMAccountName of Template User with new account for properties like the HomeDrive that need to be dynamic
-    $Template_Obj.PSObject.Properties | where {
-        $_.Value -match ".*$($Template_Obj.SAMAccountName).*" -and
-        $_.Name -ne "SAMAccountName" -and
-        $_.IsSettable -eq $True
+            $_.Value -match ".*$($Template_Obj.SAMAccountName).*" -and
+            $_.Name -ne "SAMAccountName" -and
+            $_.IsSettable -eq $True
         } | ForEach {
 
-            Try{
+            Try {
+
                 $_.Value = $_.Value -replace "$($Template_Obj.SamAccountName)","$SAM"
-            }#Try
+            }
 
             Catch {
 
                 #DoNothing
-            }#Catch
-        }#ForEach
+            }
+        }
 
-    #ADUser parameters
-    $params = @{
+        #ADUser parameters
+        $params = @{
+
             "Instance"=$Template_Obj
             "Name"=$DisplayName
             "DisplayName"=$DisplayName
@@ -2175,89 +2051,292 @@ Until($SAMFound -eq $False)
             "Description"=$Description   
             "Title"=$UserJobTitle 
             "SmartCardLogonRequired"=$True
-        }#params
+        }
 
-    $AddressPropertyNames | foreach {$params.Add("$_","$($Template_obj."$_")")}
+        $AddressPropertyNames | foreach {$params.Add("$_","$($Template_obj."$_")")}
 
-    New-ADUser @params
+        New-ADUser @params
     
-    Set-AdUser "$SAM" -Manager $FindSuperV -Replace @{Info="$Info"}
+        Set-AdUser "$SAM" -Manager $FindSuperV -Replace @{Info="$Info"}
 
-    $TempMembership = Get-ADUser -Identity $Template -Properties MemberOf
-    $TempMembership = $TempMembership | Select -ExpandProperty MemberOf
-     
-    $TempMembership | Add-ADGroupMember -Members $SAM
+        $TempMembership = Get-ADUser -Identity $Template -Properties MemberOf | 
+                            Select -ExpandProperty MemberOf | 
+                            Add-ADGroupMember -Members $SAM
 
-        If($FindSuperV -EQ $Null){
+        If($FindSuperV -EQ $Null) {
         
             $NoEmail = [Microsoft.VisualBasic.Interaction]::MsgBox("Please add Manager's Email Address to their User Account!`n" + $User.SupervisorEmail, "OKOnly,SystemModal", "Error")
+        } 
+
+    }#End GenerateUser
+
+    #Pre-populated user information
+    $Script:i = 0
+    $User = $Users[$Script:i++]
+    
+    #User account information variables
+    $Designation = $(
+
+        If($User.Citizenship -EQ "3") {
+
+            "Contractor Marshall ACME"
+
         }
 
-    <#Below
-    <#Below section removed due to inability to cross Tiers; If capability ever becomes available again,
-        will need to add ShareUtils to function.#>
+        ElseIf($User.Citizenship -EQ "2") {
 
-    <#
-    #Create user Home Drive based on $FileServer location
-        if ($FileServer -eq 'Denver'){
-	            New-Item -Itemtype directory -Path "\\SERVERA03.acme.com\Home$\" -Name $SAM
-     
-                #Create share and share permissions
-                New-Share -Name $SAM$ -ComputerName SERVERA03 -Path D:\Home\$SAM -AllowMaximum:$False -MaximumAllowed 16777216 | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA03 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA03 | Remove-SharePermission -User Everyone | Set-Share
-                #Set ACLs on the folder
-                $directory = "\\SERVERA03.acme.com\Home$\$SAM"
-                $acl = Get-Acl $directory
-                $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
-                $acl.AddAccessRule($accessrule)
-                Set-Acl -AclObject $acl $directory
-	            #Map user's H: drive to their AD account
-	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa03\$SAM$"        
-        
+            "ACME"
+
         }
-        elseif ($FileServer -eq 'Salt Lake City') {
-	            New-Item -Itemtype directory -Path "\\SERVERA04.acme.com\Home$\" -Name $SAM
-     
-                #Create share and share permissions
-                New-Share -Name $SAM$ -ComputerName SERVERA04 -Path D:\Home\$SAM -AllowMaximum:$False -MaximumAllowed 16777216 | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA04 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA04 | Remove-SharePermission -User Everyone | Set-Share
-                #Set ACLs on the folder
-                $directory = "\\SERVERA04.acme.com\Home$\$SAM"
-                $acl = Get-Acl $directory
-                $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
-                $acl.AddAccessRule($accessrule)
-                Set-Acl -AclObject $acl $directory
-	            #Map user's H: drive to their AD account
-	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa04\$SAM$"    
-        
+
+        ElseIf($User.Organization -LIKE "*Agency*") {
+
+            "Temp ACME"
+
         }
-        else {
-	            #Create folder
-	            New-Item -Itemtype directory -Path "\\SERVERA05.acme.com\Home$\" -Name $SAM
-     
-                #Create share and share permissions
-                New-Share -Name $SAM$ -ComputerName SERVERA05 -Path I:\Home\$SAM -AllowMaximum:$False -MaximumAllowed 16777216 | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA05 | Add-SharePermission -User 'Authenticated Users' -AccessType Allow -Permission FullControl | Set-Share
-                Start-Sleep -Seconds 5
-                Get-Share -Name $SAM$ -ComputerName SERVERA05 | Remove-SharePermission -User Everyone | Set-Share
-                #Set ACLs on the folder
-                $directory = "\\SERVERA05.acme.com\Home$\$SAM"
-                $acl = Get-Acl $directory
-                $accessrule = New-Object System.Security.AccessControl.FileSystemAccessRule("SERVER\$SAM","Modify","ContainerInherit,ObjectInherit","None","Allow")
-                $acl.AddAccessRule($accessrule)
-                Set-Acl -AclObject $acl $directory
-	            #Map user's H: drive to their AD account
-	            Set-ADUser $SAM -HomeDrive H: -HomeDirectory "\\SERVERa05\$SAM$"
-            }#>
-	}
-}#End CreateNewUser
+
+        ElseIf($User.Department -LIKE "Temp*" -Or $User.Department -LIKE "*Short") {
+
+            "Temp ACME"
+
+        }
+
+        ElseIf($User.Designation -EQ "1") {
+
+            "Boss ACME"
+
+        }
+
+        ElseIf($User.Designation -EQ "2") {
+
+            "Civilian ACME"
+
+        }
+
+        ElseIf($User.Designation -EQ "3") {
+
+            "Contractor ACME"
+        }
+    )
+
+    $UserFirstname = $User.FirstName
+    $UserInitial = $User.MiddleIn
+    $UserLastname = $User.LastName
+    $SupervisorEmail = $User.SupervisorEmail
+    $UserCompany = $User.Company
+    $UserDepartment = $User.Department
+    $Citizenship = $User.Citizenship
+    $FileServer = $User.Location
+    $UserJobTitle = $User.JobTitle
+    $OfficePhone = $User.Phone
+    $Email = $User.Email
+    $Description = $(
+
+        If($User.Citizenship -eq 2) {
+
+            "Domain User (FN)"
+
+        }
+
+        ElseIf($User.Citizenship -eq 3) {
+    
+            "Domain User (USA)"
+
+        }
+
+        ElseIf($User.Citizenship -eq 1) {
+
+            "Domain User"
+
+        }
+    )
+
+#XML code for GUI objects
+$inputXML = @"
+<Window x:Class="Bear.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Bear"
+        mc:Ignorable="d"
+        Title="Bear Necessities | $ProVersion | Create New Users" Height="510" Width="750" BorderBrush="#FF211414" Background="#FF6C6B6B" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+
+    <Grid>
+
+        
+        <TextBox Name="FirstName" Text="$UserFirstname" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="12,284,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(First Name)" Height="28" HorizontalAlignment="Left" Margin="12,262,0,0" VerticalAlignment="Top" FontWeight="Bold" Width="106" />
+
+        <TextBox Name="MiddleIn" Text="$UserInitial" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="258,284,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Middle Initial)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="258,262,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="LastName" Text="$UserLastname" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="505,284,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Last Name)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="505,262,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Organization" Text="$UserCompany" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="12,332,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Organization)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="12,310,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Department" Text="$UserDepartment" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="258,332,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Department)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="258,310,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Phone" Text="$OfficePhone" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="505,332,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Phone)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="505,310,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Email" Text="$Email" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="12,380,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Official User Email)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="12,358,0,0" VerticalAlignment="Top" Width="127" />
+
+        <TextBox Name="JobTitle" Text="$UserJobTitle" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="258,380,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Job Title)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="258,358,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Description" Text="$Description" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="505,380,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Description)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="505,358,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="Designation" Text="$Designation" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="12,428,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Designation)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="12,406,0,0" VerticalAlignment="Top" Width="97" />
+
+        <TextBox Name="SupervisorEmail" Text="$SupervisorEmail" Background="Black" CharacterCasing="Upper" Cursor="IBeam" Foreground="White" Height="27" HorizontalAlignment="Left" Margin="258,428,0,0" VerticalAlignment="Top" Width="211" />
+        <Label Content="(Supervisor's Email)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="258,406,0,0" VerticalAlignment="Top" Width="128" />
+
+	<Button Name="NewUser" Background="Black" BorderBrush="Black" BorderThickness="2" Content="Create New User" Foreground="White" Height="30" HorizontalAlignment="Left" Margin="559,14,0,0" VerticalAlignment="Top" Width="144" FontSize="13" FontWeight="Bold" FontFamily="Arial" />
+
+	<Label Content="(User Template)" FontWeight="Bold" Height="28" HorizontalAlignment="Left" Margin="198,65,0,0" VerticalAlignment="Top" Width="106" />
+ 	<ListBox Name="Templates" AllowDrop="True" Background="Black" BorderBrush="Black" BorderThickness="2" Foreground="White" Height="167" HorizontalAlignment="Left" ItemsSource="{Binding}" Margin="198,0,0,215" VerticalAlignment="Bottom" Width="211">
+
+            <ListBoxItem Name="Student" Content="Student Template" />
+            <ListBoxItem Name="Teacher" Content="Teacher Template" />
+            </ListBox>
+
+    </Grid>
+</Window>               
+ 
+"@ 
+ 
+    $inputXML = $inputXML -replace 'mc:Ignorable="d"','' -replace "x:N",'N'  -replace '^<Win.*', '<Window'
+ 
+    [Void][System.Reflection.Assembly]::LoadWithPartialName('presentationframework')
+    [XML]$XAML = $inputXML
+
+    #Read XAML
+    $Reader = (New-Object System.Xml.XmlNodeReader $XAML)
+
+    Try {
+
+        $Form=[Windows.Markup.XamlReader]::Load( $Reader )
+    }
+
+    Catch {
+
+        Write-Host "Unable to load Windows.Markup.XamlReader. Double-check syntax and ensure .net is installed."
+    }
+
+    #Store Form Objects In PowerShell
+    $xaml.SelectNodes("//*[@Name]") | %{Set-Variable -Name "WPF$($_.Name)" -Value $Form.FindName($_.Name)}
+
+    #Connect to Controls
+    $firstnameTextBox = $Form.FindName('FirstName')
+    $middleinTextBox = $Form.FindName('MiddleIn')
+    $lastnameTextBox = $Form.FindName('LastName')
+    $organizationTextBox = $Form.FindName('Organization')
+    $emailTextBox = $Form.FindName('Email')
+    $designationTextBox = $Form.FindName('Designation')
+    $departmentTextBox = $Form.FindName('Department')
+    $jobtitleTextBox = $Form.FindName('JobTitle')
+    $phoneTextBox = $Form.FindName('Phone')
+    $descriptionTextBox = $Form.FindName('Description')
+    $supervisoremailTextBox = $Form.FindName('SupervisorEmail')
+    $templatesListBox = $Form.FindName('Templates')
+    $newuserButton = $Form.FindName('NewUser')
+
+    #Create New User Button 
+    $newuserButton.Add_Click({
+
+        #Call user creation function
+        GenerateUser
+
+            $User = $Users[$script:i++]
+
+                $Designation = $(
+
+                    If($User.Citizenship -EQ "3") {
+
+                        "Contractor Marshall ACME"
+
+                    }
+
+                    ElseIf($User.Citizenship -EQ "2") {
+
+                        "ACME"
+
+                    }
+
+                    ElseIf($User.Organization -LIKE "*Agency*") {
+
+                        "Temp ACME"
+
+                    }
+
+                    ElseIf($User.Department -LIKE "Temp*" -Or $User.Department -LIKE "*Short") {
+
+                        "Temp ACME"
+
+                    }
+
+                    ElseIf($User.Designation -EQ "1") {
+
+                        "Boss ACME"
+
+                    }
+
+                    ElseIf($User.Designation -EQ "2") {
+
+                        "Civilian ACME"
+
+                    }
+
+                    ElseIf($User.Designation -EQ "3") {
+
+                        "Contractor ACME"
+                    }
+                )
+
+                $Description = $(
+
+                    If($User.Citizenship -eq 2) {
+
+                        "Domain User (FN)"
+
+                    }
+
+                    ElseIf($User.Citizenship -eq 3) {
+    
+                        "Domain User (USA)"
+
+                    }
+
+                    ElseIf($User.Citizenship -eq 1) {
+
+                        "Domain User"
+
+                    }
+                )
+        
+                $firstnameTextBox.Text = $User.FirstName
+                $middleinTextBox.Text = $User.MiddleIn
+                $lastnameTextBox.Text = $User.LastName
+                $organizationTextBox.Text = $User.Company
+                $emailTextBox.Text = $User.Email
+                $designationTextBox.Text = $Designation
+                $departmentTextBox.Text = $User.Department
+                $jobtitleTextBox.Text = $User.JobTitle
+                $phoneTextBox.Text = $User.Phone
+                $descriptionTextBox.Text = $Description
+                $supervisoremailTextBox.Text =$User.SupervisorEmail
+    })
+
+#Show Form
+$Form.ShowDialog() | Out-Null
+}
 
 function GUI {
 
