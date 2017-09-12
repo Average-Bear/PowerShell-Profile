@@ -1495,13 +1495,41 @@ Copies and installs specifed filepath ($Path). This serves as a template for the
 param(
 
     [parameter(mandatory=$true)]        
-    [string[]]$Computername,            
-    #Installer location        
-    [parameter(mandatory=$true)]        
-    [string]$Path,
-    #Retrieve Leaf object from $Path
-    $FileName = (Split-Path -Path $Path -Leaf)    
+    [string[]]$Computername            
 )
+
+Add-Type -AssemblyName System.Windows.Forms
+
+$Dialog = New-Object System.Windows.Forms.OpenFileDialog
+$Dialog.InitialDirectory = "\\Server01\IT\Applications"
+$Dialog.Title = "Select Installation File"
+$Dialog.Filter = "Installation Files (*.exe,*.msi,*.msp)|*.exe; *.msi; *.msp"
+$Result = $Dialog.ShowDialog()
+
+if($Result -eq 'OK') {
+
+    Try {
+        
+        $Path = $Dialog.FileName
+	Write-Host -ForegroundColor Green "`nFile selected for Remote Installation: $Path"
+    }
+
+    Catch {
+
+        $Path = $null
+	Break
+    }
+}
+
+else {
+
+    #Shows upon cancellation of Save Menu
+    Write-Host -ForegroundColor Yellow "Notice: No installation file selected."
+    Break
+}
+
+#Retrieve Leaf object from $Path
+$FileName = (Split-Path -Path $Path -Leaf)
 
 #Create function    
 function InstallAsJob {
