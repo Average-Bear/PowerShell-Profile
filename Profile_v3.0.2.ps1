@@ -1475,164 +1475,244 @@ function RmUserProf {
     }
 }#End RmUserProf
 
-function InstallPackage {
+function InstallApplication {
 
 <#     
 .SYNOPSIS     
-Written by JBear 2/9/2017    
-Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
+  
+    Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes: .EXE, .MSI, & .MSP 
 
 .DESCRIPTION     
-Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes:    ( .EXE, .MSI, & .MSP )
+    Copies and installs specifed filepath ($Path). This serves as a template for the following filetypes: .EXE, .MSI, & .MSP
 
 .EXAMPLE    
-.\InstallAsJob (Get-Content C:\ComputerList.txt)
+    .\InstallAsJob (Get-Content C:\ComputerList.txt)
 
 .EXAMPLE    
-.\InstallAsJob Computer1, Computer2, Computer3    
+    .\InstallAsJob Computer1, Computer2, Computer3 
+    
+.NOTES   
+    Written by: JBear 
+    Date: 2/9/2017 
+    
+    Edited by: JBear
+    Date: 10/13/2017 
 #> 
 
-param(
+    param(
 
-    [parameter(mandatory=$true)]        
-    [string[]]$Computername            
-)
+        [Parameter(Mandatory=$true,HelpMessage="Enter Computername(s)")]
+        [String[]]$Computername,
 
-Add-Type -AssemblyName System.Windows.Forms
+        [Parameter(ValueFromPipeline=$true,HelpMessage="Enter installer path(s)")]
+        [String[]]$Path = $null,
 
-$Dialog = New-Object System.Windows.Forms.OpenFileDialog
-$Dialog.InitialDirectory = "\\Server01\IT\Applications"
-$Dialog.Title = "Select Installation File"
-$Dialog.Filter = "Installation Files (*.exe,*.msi,*.msp)|*.exe; *.msi; *.msp"
-$Result = $Dialog.ShowDialog()
+        [Parameter(ValueFromPipeline=$true,HelpMessage="Enter remote destination: C$\Directory")]
+        $Destination = "C$\TempApplications"
+    )
 
-if($Result -eq 'OK') {
+    if($Path -eq $null) {
 
-    Try {
+        Add-Type -AssemblyName System.Windows.Forms
+
+        $Dialog = New-Object System.Windows.Forms.OpenFileDialog
+        $Dialog.InitialDirectory = "\\kwajv101\deployments$"
+        $Dialog.Title = "Select Installation File(s)"
+        $Dialog.Filter = "Installation Files (*.exe,*.msi,*.msp)|*.exe; *.msi; *.msp"        
+        $Dialog.Multiselect=$true
+        $Result = $Dialog.ShowDialog()
+
+        if($Result -eq 'OK') {
+
+            Try {
         
-        $Path = $Dialog.FileName
-	Write-Host -ForegroundColor Green "`nFile selected for Remote Installation: $Path"
-    }
-
-    Catch {
-
-        $Path = $null
-	Break
-    }
-}
-
-else {
-
-    #Shows upon cancellation of Save Menu
-    Write-Host -ForegroundColor Yellow "Notice: No installation file selected."
-    Break
-}
-
-#Retrieve Leaf object from $Path
-$FileName = (Split-Path -Path $Path -Leaf)
-
-#Create function    
-function InstallAsJob {
-
-    #Each item in $Computernam variable        
-    ForEach($Computer in $Computername) {
-
-        #If $Computer IS NOT null or only whitespace
-        if(!([string]::IsNullOrWhiteSpace($Computer))) {
-
-            #Test-Connection to $Computer
-            if(Test-Connection -Quiet -Count 1 $Computer) { 
-                                               
-                #Static Temp location
-                $TempDir = "\\$Computer\C$\TempPatchDir"
-
-                #Final filepath
-                $Executable = "$TempDir\$FileName"
-                     
-                #Create job on localhost
-                Start-Job {
-                param($Computername, $Computer, $Path, $Filename, $TempDir, $Executable)
-                        
-                    #Create $TempDir directory
-                    New-Item -Type Directory $TempDir -Force | Out-Null
-
-                    #Copy needed installer files to remote machine
-                    Copy-Item -Path $Path -Destination $TempDir
-
-                    #If file is an EXE
-                    if($FileName -like "*.exe") {
-
-                        function InvokeEXE {
-
-                            Invoke-Command -ComputerName $Computer {
-                            param($TempDir, $FileName, $Executable)
-                                    
-                                #Start EXE file
-                                Start-Process $Executable -ArgumentList "/s" -Wait
-                                    
-                                #Remove $TempDir location from remote machine
-                                Remove-Item -Path $TempDir -Recurse -Force
-                            } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable
-                        }
-
-                        InvokeEXE | Wait-Job | Receive-Job                        
-                    }
-                                                                    
-                    elseif($FileName -like "*.msi") {
-
-                        function InvokeMSI {
-
-                            Invoke-Command -ComputerName $Computer {
-                            param($TempDir, $FileName, $Executable)
-
-                                #Start MSI file                                    
-                                Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait
-
-                                #Remove $TempDir location from remote machine                                   
-                                Remove-Item -Path $TempDir -Recurse -Force                                
-                            } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            
-                        }
-
-                        InvokeMSI | Wait-Job | Receive-Job                        
-                    }
-
-                    elseif($FileName -like "*.msp") { 
-                                                                       
-                        function InvokeMSP {
-
-                            Invoke-Command -ComputerName $Computer {
-                            param($TempDir, $FileName, $Executable)
-
-                                #Start MSP file                                    
-                                Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait
-
-                                #Remove $TempDir location from remote machine                                   
-                                Remove-Item -Path $TempDir -Recurse -Force                                
-                            } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
-                        }
-
-                        InvokeMSP | Wait-Job | Receive-Job                        
-                    }
-
-                    else {
-
-                        Write-Host "$Destination does not exist on $Computer, or has an incorrect file extension. Please try again."                        
-                    }                      
-                } -Name "Patch Job" -Argumentlist $Computername, $Computer, $Path, $Filename, $TempDir, $Executable                
+                $Path = $Dialog.FileNames
             }
-                                            
-            else {                                
-                    
-                Write-Host "Unable to connect to $Computer."                
-            }            
-        }        
-    }   
-}
 
-InstallAsJob
-Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"    
-Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache." 
-}#End InstallPackage
+            Catch {
+
+                $Path = $null
+	            Break
+            }
+        }
+
+        else {
+
+            #Shows upon cancellation of Save Menu
+            Write-Host -ForegroundColor Yellow "Notice: No file(s) selected."
+            Break
+        }
+    }
+
+    #Create function    
+    function InstallAsJob {
+
+        #Each item in $Computernam variable        
+        foreach($Computer in $Computername) {
+
+            #If $Computer IS NOT null or only whitespace
+            if(!([string]::IsNullOrWhiteSpace($Computer))) {
+
+                #Test-Connection to $Computer
+                if(Test-Connection -Quiet -Count 1 $Computer) {                                               
+                     
+                    #Create job on localhost
+                    Start-Job { param($Computer, $Path, $Destination)
+
+                        foreach($P in $Path) {
+                            
+                            #Static Temp location
+                            $TempDir = "\\$Computer\$Destination"
+
+                            #Create $TempDir directory
+                            if(!(Test-Path $TempDir)) {
+
+                                New-Item -Type Directory $TempDir | Out-Null
+                            }
+                     
+                            #Retrieve Leaf object from $Path
+                            $FileName = (Split-Path -Path $P -Leaf)
+
+                            #New Executable Path
+                            $Executable = "C:\$(Split-Path -Path $Destination -Leaf)\$FileName"
+
+                            #Copy needed installer files to remote machine
+                            Copy-Item -Path $P -Destination $TempDir
+
+                            #Install .EXE
+                            if($FileName -like "*.exe") {
+
+                                function InvokeEXE {
+
+                                    Invoke-Command -ComputerName $Computer { param($TempDir, $FileName, $Executable)
+                                    
+                                        Try {
+
+                                            #Start EXE file
+                                            Start-Process $Executable -ArgumentList "/s" -Wait -NoNewWindow
+                                            
+                                            Write-Output "`n$FileName installation complete on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName installation failed on $Computer."
+                                        }
+
+                                        Try {
+                                    
+                                            #Remove $TempDir location from remote machine
+                                            Remove-Item -Path $Executable -Recurse -Force
+
+                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                        }
+                                       
+                                    } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable
+                                }
+
+                                InvokeEXE | Receive-Job -Wait
+                            }
+                               
+                            #Install .MSI                                        
+                            elseif($FileName -like "*.msi") {
+
+                                function InvokeMSI {
+
+                                    Invoke-Command -ComputerName $Computer { param($TempDir, $FileName, $Executable)
+
+                                        Try {
+                                        
+                                            #Start MSI file                                    
+                                            Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait -ErrorAction Stop
+
+                                            Write-Output "`n$FileName installation complete on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName installation failed on $Computer."
+                                        }
+
+                                        Try {
+                                    
+                                            #Remove $TempDir location from remote machine
+                                            Remove-Item -Path $Executable -Recurse -Force
+
+                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                        }                              
+                                    } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            
+                                }
+
+                                InvokeMSI | Receive-Job -Wait
+                            }
+
+                            #Install .MSP
+                            elseif($FileName -like "*.msp") { 
+                                                                       
+                                function InvokeMSP {
+
+                                    Invoke-Command -ComputerName $Computer { param($TempDir, $FileName, $Executable)
+
+                                        Try {
+                                                                                
+                                            #Start MSP file                                    
+                                            Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait -ErrorAction Stop
+
+                                            Write-Output "`n$FileName installation complete on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName installation failed on $Computer."
+                                        }
+
+                                        Try {
+                                    
+                                            #Remove $TempDir location from remote machine
+                                            Remove-Item -Path $Executable -Recurse -Force
+
+                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                        }
+
+                                        Catch {
+                                        
+                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                        }                             
+                                    } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
+                                }
+
+                                InvokeMSP | Receive-Job -Wait
+                            }
+
+                            else {
+
+                                Write-Host "$Destination has an unsupported file extension. Please try again."                        
+                            }
+                        }                      
+                    } -Name "Application Install" -Argumentlist $Computer, $Path, $Destination            
+                }
+                                            
+                else {                                
+                    
+                    Write-Host "Unable to connect to $Computer."                
+                }            
+            }        
+        }   
+    }
+
+    #Call main function
+    InstallAsJob | Receive-Job -Wait -Keep
+}#End InstallApplication
 
 function CrossCertRm {
   <# 
