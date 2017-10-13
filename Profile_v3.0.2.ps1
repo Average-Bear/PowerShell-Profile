@@ -1591,12 +1591,12 @@ function InstallApplication {
                                             #Start EXE file
                                             Start-Process $Executable -ArgumentList "/s" -Wait -NoNewWindow
                                             
-                                            Write-Output "`n$FileName installation complete on $Computer."
+                                            Write-Output "`n$FileName installation complete on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName installation failed on $Computer."
+                                            Write-Output "`n$FileName installation failed on $env:computername."
                                         }
 
                                         Try {
@@ -1604,12 +1604,12 @@ function InstallApplication {
                                             #Remove $TempDir location from remote machine
                                             Remove-Item -Path $Executable -Recurse -Force
 
-                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                            Write-Output "`n$FileName source file successfully removed on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                            Write-Output "`n$FileName source file removal failed on $env:computername."    
                                         }
                                        
                                     } -AsJob -JobName "Silent EXE Install" -ArgumentList $TempDir, $FileName, $Executable
@@ -1630,12 +1630,12 @@ function InstallApplication {
                                             #Start MSI file                                    
                                             Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait -ErrorAction Stop
 
-                                            Write-Output "`n$FileName installation complete on $Computer."
+                                            Write-Output "`n$FileName installation complete on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName installation failed on $Computer."
+                                            Write-Output "`n$FileName installation failed on $env:computername."
                                         }
 
                                         Try {
@@ -1643,12 +1643,12 @@ function InstallApplication {
                                             #Remove $TempDir location from remote machine
                                             Remove-Item -Path $Executable -Recurse -Force
 
-                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                            Write-Output "`n$FileName source file successfully removed on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                            Write-Output "`n$FileName source file removal failed on $env:computername."    
                                         }                              
                                     } -AsJob -JobName "Silent MSI Install" -ArgumentList $TempDir, $FileName, $Executable                            
                                 }
@@ -1668,12 +1668,12 @@ function InstallApplication {
                                             #Start MSP file                                    
                                             Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait -ErrorAction Stop
 
-                                            Write-Output "`n$FileName installation complete on $Computer."
+                                            Write-Output "`n$FileName installation complete on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName installation failed on $Computer."
+                                            Write-Output "`n$FileName installation failed on $env:computername."
                                         }
 
                                         Try {
@@ -1681,12 +1681,12 @@ function InstallApplication {
                                             #Remove $TempDir location from remote machine
                                             Remove-Item -Path $Executable -Recurse -Force
 
-                                            Write-Output "`n$FileName source file successfully removed on $Computer."
+                                            Write-Output "`n$FileName source file successfully removed on $env:computername."
                                         }
 
                                         Catch {
                                         
-                                            Write-Output "`n$FileName source file removal failed on $Computer."    
+                                            Write-Output "`n$FileName source file removal failed on $env:computername."    
                                         }                             
                                     } -AsJob -JobName "Silent MSP Installer" -ArgumentList $TempDir, $FileName, $Executable
                                 }
