@@ -1711,7 +1711,9 @@ function InstallApplication {
     }
 
     #Call main function
-    InstallAsJob | Receive-Job -Wait -Keep
+    InstallAsJob
+    Write-Host "`nJob creation complete. Please use the Get-Job cmdlet to check progress.`n"
+    Write-Host "Once all jobs are complete, use Get-Job | Receive-Job to retrieve any output or, Get-Job | Remove-Job to clear jobs from the session cache."
 }#End InstallApplication
 
 function CrossCertRm {
