@@ -90,14 +90,14 @@ Version 1.1:
 #$shell.BackgroundColor = “Black”
 #$shell.ForegroundColor = “White”
 
-net use Q: "\\SERVER12345\IT\Documentation\PowerShell"
-
-Set-Location "Q:\Scripts"
+#net use Q: "\\SERVER12345\IT\Documentation\PowerShell"
+#Set-Location "Q:\Scripts"
 
 #Update-Help
 
 #Custom menu that lists currently available functions within the shell repository
-function PrintMenu{
+function PrintMenu {
+
 	Write-Host(" ----------------------- ")
 	Write-Host("| Bear Necessities $ProVersion |")
 	Write-Host(" ----------------------- ")
@@ -1624,11 +1624,18 @@ function InstallApplication {
                                 function InvokeMSI {
 
                                     Invoke-Command -ComputerName $Computer { param($TempDir, $FileName, $Executable)
+				    
+				    	$MSIArguments = @(
+						
+						"/i"
+						$Executable
+						"/qn"
+					)
 
                                         Try {
                                         
                                             #Start MSI file                                    
-                                            Start-Process 'msiexec.exe' "/i $Executable /qn" -Wait -ErrorAction Stop
+                                            Start-Process 'msiexec.exe' -ArgumentList $MSIArguments -Wait -ErrorAction Stop
 
                                             Write-Output "`n$FileName installation complete on $env:computername."
                                         }
@@ -1662,11 +1669,18 @@ function InstallApplication {
                                 function InvokeMSP {
 
                                     Invoke-Command -ComputerName $Computer { param($TempDir, $FileName, $Executable)
+				    
+				    	$MSPArguments = @(
+						
+						"/p"
+						$Executable
+						"/qn"
+					)				    
 
                                         Try {
                                                                                 
                                             #Start MSP file                                    
-                                            Start-Process 'msiexec.exe' "/p $Executable /qn" -Wait -ErrorAction Stop
+                                            Start-Process 'msiexec.exe' -ArgumentList $MSPArguments -Wait -ErrorAction Stop
 
                                             Write-Output "`n$FileName installation complete on $env:computername."
                                         }
