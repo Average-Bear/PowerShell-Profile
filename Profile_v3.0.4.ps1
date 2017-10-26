@@ -1507,7 +1507,7 @@ function InstallApplication {
         [Parameter(ValueFromPipeline=$true,HelpMessage="Enter installer path(s)")]
         [String[]]$Path = $null,
 
-        [Parameter(ValueFromPipeline=$true,HelpMessage="Enter remote destination: C$\Directory")]
+        [Parameter(ValueFromPipeline=$true,HelpMessage='Enter remote destination: C$\Directory')]
         $Destination = "C$\TempApplications"
     )
 
