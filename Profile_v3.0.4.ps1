@@ -1,4 +1,4 @@
- $ProVersion = "v3.0.4"
+$ProVersion = "v3.0.4"
 <#
 PowerShell Profile $ProVersion
 Author: Jeremy DeWitt aka JBear
