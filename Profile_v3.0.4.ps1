@@ -1,6 +1,6 @@
 $ProVersion = "v3.0.4"
+$ProName = "| Bear Necessities $ProVersion |"
 <#
-PowerShell Profile $ProVersion
 Author: Jeremy DeWitt aka JBear
 
 Update Notes:
@@ -98,7 +98,7 @@ Version 1.1:
 function PrintMenu {
 
 	Write-Host(" ----------------------- ")
-	Write-Host("| Bear Necessities $ProVersion |")
+	Write-Host("$ProName")
 	Write-Host(" ----------------------- ")
 	Write-Host('Type "GUI" to launch GUI interface!')
 	Write-Host("")
@@ -2563,7 +2563,7 @@ $inputXML = @"
         #If YES, execute Reboot
         elseif($Answer -eq 0) {
 
-                Reboot $SplitString; $listBox.Items.Add("$Stamp Reboot initialized!`n")
+            Reboot $SplitString; $listBox.Items.Add("$Stamp Reboot initialized!`n")
 	    }
     })
 
