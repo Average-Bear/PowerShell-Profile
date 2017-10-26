@@ -800,7 +800,7 @@ $Stamp = (Get-Date -Format G) + ":"
         } 
     }
 
-    $SystemInformation = SystemInformation | Wait-Job | Receive-Job | Select "Computer Name", "Current User", "Operating System", Model, RAM, "Disk Capacity", "Total Disk Space", "Last Reboot"
+    $SystemInformation = SystemInformation | Receive-Job -Wait | Select ComputerName, CurrentUser, OperatingSystem, Model, RAM, DiskCapacity, TotalDiskSpace, LastReboot
     $DocPath = [environment]::getfolderpath("mydocuments") + "\SystemInformation-Report.csv"
 
 	Switch($CheckBox.IsChecked) {
