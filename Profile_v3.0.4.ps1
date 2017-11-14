@@ -988,7 +988,7 @@ param (
     [String[]]$ComputerName,
 
     [Parameter(ValueFromPipeline=$true)]
-    [String]$NameRegex = '',
+    [String]$ApplicationName = '',
 
     $i=0,
     $j=0
@@ -1006,7 +1006,7 @@ param (
 
                     Write-Progress -Activity "Retrieving Software Information..." -Status ("Percent Complete:" + "{0:N0}" -f ((($i++) / $ComputerName.count) * 100) + "%") -CurrentOperation "Processing $($Computer)..." -PercentComplete ((($j++) / $ComputerName.count) * 100)
 
-                    Start-Job -ScriptBlock { param($Computer,$NameRegex)    
+                    Start-Job -ScriptBlock { param($Computer,$ApplicationName)    
 
                         $Keys = '','\Wow6432Node'
 
@@ -1027,7 +1027,7 @@ param (
                                 $Program = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$Computer).OpenSubKey("SOFTWARE$Key\Microsoft\Windows\CurrentVersion\Uninstall\$app")
                                 $Name = $Program.GetValue('DisplayName')
 
-                                if($Name -and $Name -match $NameRegex) {
+                                if($Name -and $Name -match $ApplicationName) {
 
                                     [PSCustomObject]@{
 
@@ -1054,7 +1054,7 @@ param (
                                 }
                             }
                         }
-                    } -Name "Software Check" -ArgumentList $Computer, $NameRegex 
+                    } -Name "Software Check" -ArgumentList $Computer, $ApplicationName 
                 }
 
                 else {
