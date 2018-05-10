@@ -2152,7 +2152,7 @@ function CallNewUserGUI {
             "Enabled"=$false
             "ChangePasswordAtLogon"=$false
             "UserPrincipalName"=$UserPrincipalName
-            "SAMAccountName"=$SAM
+            "SAMAccountName"=$SAMAccountName
             "Path"=$OU
             "OfficePhone"=$OfficePhone
             "EmailAddress"=$Email
