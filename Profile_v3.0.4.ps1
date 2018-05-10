@@ -2075,39 +2075,39 @@ function CallNewUserGUI {
         $FindSuperV = Get-ADUser -Filter { ( mail -Like $User.SupervisorEmail ) } -ErrorAction SilentlyContinue
         $FindSuperV = $FindSuperV | select -First "1" -ExpandProperty SamAccountName
 
-        #Load Visual Basic .NET Framework
-        [Void][System.Reflection.Assembly]::LoadWithPartialName('Microsoft.VisualBasic')
-　
-        #Do{ process } Until( )
-        Do { 
+        $SamPrefix = $LastName.ToLower() + $FirstName.Substring(0,1).ToLower()
+        $Index = 1
 
-            #Continue if $True
-            While($True) {
+        Do {
 
-                $SAM = [Microsoft.VisualBasic.Interaction]::InputBox("Enter desired Username for $Displayname :", "Create Username", "") 
-            
-                #Will loop if no value is supplied for $SAM
-                If($SAM -ne "$Null") {
+            if($Index -eq "1")     {
+    
+                $script:SAMAccountName = "$SamPrefix"
+            }
 
-                    #If AD user exists, throw error warning; loop back to $SAM input
-                    Try {
+            else {
+    
+                $script:SAMAccountName = "$SamPrefix" + $Index
+            }
 
-                        $FindSAM = Get-ADUser $SAM -ErrorAction Stop
-                        $SAMError = [Microsoft.VisualBasic.Interaction]::MsgBox("Username [$SAM] already in use by: " + $FindSAM.Name + "`nPlease try again...", "OKOnly,SystemModal", "Error")
-                    }
+            Try {
+    
+                if(Get-ADUser -LDAPFilter "SAMAccountName=$SamAccountName" -ErrorAction Stop) {
+        
+                    $Index++
+                }    
 
-                    #On -EA Stop, specified account doesn't exist; continue with creation
-                    Catch {
-
-                        $SAMFound = $False 
-                        Break 
-                    }
+                else {
+        
+                    $SAMOK = $true
                 }
             }
-        }
 
-        #Break from Do { } when $SAMFound is $False
-        Until($SAMFound -eq $False) 
+            Catch {
+    
+                $SAMOK = $false
+            }
+        } Until ($SAMOK -or ($Index -ge 99))
 
         #Parameters from Template User Object
         $AddressPropertyNames = @("StreetAddress","State","PostalCode","POBox","Office","Country","City")
