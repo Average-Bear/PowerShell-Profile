@@ -1932,7 +1932,7 @@ function ResetIDSM {
     Kills IDSM_Software python process and restarts the IDSM_Software python process.
 
 .PARAMETER Location
-    Gagan or Legan (can accept both entries).
+    IDSM1 or IDSM2 (can accept both entries).
 
 .NOTES
     Author: JBear
@@ -1941,7 +1941,7 @@ function ResetIDSM {
 
 param(
 
-    [Parameter(Mandatory=$true, HelpMessage="Legan or Gagan")]
+    [Parameter(Mandatory=$true, HelpMessage="IDSM1 or IDSM2")]
     [ValidateSet("IDSM1","IDSM2")]
     [String[]]$Location
 )
