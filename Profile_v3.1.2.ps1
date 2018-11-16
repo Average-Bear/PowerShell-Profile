@@ -1,9 +1,6 @@
 $ProVersion = "v3.1.2"
 <#
-
 PowerShell Profile $ProVersion
-
-
 
 Author: Jeremy DeWitt aka JBear
 
