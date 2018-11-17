@@ -291,31 +291,6 @@ function GodMode {
     Start-Process "$GodPath"
 }#End GodMode
 
-function UpdateProfile {
-<# 
-.SYNOPSIS 
-    Update PowerShell profile to current repository content
-
-.EXAMPLE 
-    UpdateProfile
-
-.NOTES
-    Author:JBear 
-#> 
-
-    $NetworkLocation = "\\Server01\it\PowerShell\Profile Repository\DevOps\TechProfile.txt"
-
-    $MyDocuments = [Environment]::GetFolderPath("MyDocuments") + "\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
-    $MyDocuments2 = [Environment]::GetFolderPath("MyDocuments") + "\WindowsPowerShell\Profile.ps1"
-
-    #Overwrite current $Profile for PowerShell and PowerShell ISE
-    Copy-Item -Path "$NetworkLocation" -Destination "$MyDocuments" -Force
-    Copy-Item -Path "$NetworkLocation" -Destination "$MyDocuments2" -Force	
-
-    #Reload PowerShell
-    Powershell	
-}#End UpdateProfile
-
 function SCCM {
 <# 
 .SYNOPSIS 
